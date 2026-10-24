@@ -10,14 +10,13 @@ static void crearConfiguracion(struct Data *data) //Con un puntero evitamos tene
     fprintf(configuracion,"ResistenciaCasa=%d\n",data->resistenciaCasa);
     fprintf(configuracion,"FrecuenciaDisparoPlantas=%f\n",data->frecuenciaDisparoPlantas);
     fprintf(configuracion,"FrecuenciaSoles=%f\n",data->frecuenciaSoles);
-    fprintf(configuracion,"CantidadObstaculos=%f\n",data->frecuenciaSoles);
 
     fclose(configuracion);
 }
 
 struct Data leerConfiguracion()
 {
-    struct Data data = {5,100,100,1.0f,10.0f,2}; //configuración por defecto
+    struct Data data = {5,100,100,1.0f,10.0f}; //configuración por defecto
 
     char linea[128];
     char atributo[128];
@@ -41,7 +40,6 @@ struct Data leerConfiguracion()
         else if ((strcmp(atributo,"ResistenciaCasa") == 0)){data.resistenciaCasa = (int)valor;}
         else if ((strcmp(atributo,"FrecuenciaDisparoPlantas") == 0)){data.frecuenciaDisparoPlantas = valor;}
         else if ((strcmp(atributo,"FrecuenciaSoles") == 0)){data.frecuenciaSoles = valor;}
-        else if ((strcmp(atributo,"CantidadObstaculos") == 0)){data.cantidadObstaculos = (int)valor;}
     }
 
     fclose(file);

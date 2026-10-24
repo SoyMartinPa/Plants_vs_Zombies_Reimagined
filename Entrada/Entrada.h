@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <time.h>
 
 //Nota: Si se quiere ampliar la configuración, se debe modificar el struct y 
 //la función "crearConfiguracion" y el while de "leerConfiguración"
@@ -12,8 +14,7 @@ struct Data{
    int resistenciaCasa;
    float frecuenciaDisparoPlantas; //frecuencia medida en segundos
    float frecuenciaSoles;
-   int cantidadObstaculos; //Va en un intervalo de dificultad del 0 al 5
-
 };
 
 struct Data leerConfiguracion();
+char** cargarMapa();
