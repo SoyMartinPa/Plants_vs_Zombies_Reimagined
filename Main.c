@@ -4,6 +4,6 @@
 int main(void)
 {
     struct Data configuracion = leerConfiguracion(); //Ver info de DATA en Entrada.h
-    char **jardin = cargarMapa(); //Jardin es una matriz Jardin[][]
+    struct Mapa* jardin = cargarMapa(); //Jardin es una matriz Jardin[][]
     return 0;
 }

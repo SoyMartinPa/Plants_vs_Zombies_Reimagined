@@ -12,9 +12,20 @@ struct Data{
    int numeroOleadas;
    int resistenciaZombies;
    int resistenciaCasa;
+   int resistenciaPlantas;
    float frecuenciaDisparoPlantas; //frecuencia medida en segundos
    float frecuenciaSoles;
 };
+struct Mapa{
+   int filas;
+   int columnas;
+   char **matriz;
+};
+
+
 
 struct Data leerConfiguracion();
-char** cargarMapa();
+struct Mapa* crearMapa(int filas, int columnas,int cantidadObstaculos);
+void agregarObstaculos(struct Mapa *mapa, int cantidadObstaculos);
+void guardarMapaEnArchivo(struct Mapa *mapa);
+struct Mapa* cargarMapa();
