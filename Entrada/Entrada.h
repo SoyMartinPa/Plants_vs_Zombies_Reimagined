@@ -10,16 +10,16 @@
 //Esto claramente rompe los principios SOLID pero como como c no está orientado a objetos...
 struct Data{
    int numeroOleadas;
-   int resistenciaZombies;
+   int resistenciaZombies; //La resistencia es un factor, si 1 es valor por defecto. Si 1.5, vidaZombie *1.5
    int resistenciaCasa;
-   int resistenciaPlantas;
+   int resistenciaPlantas; 
    float frecuenciaDisparoPlantas; //frecuencia medida en segundos
    float frecuenciaSoles;
 };
 struct Mapa{
-   int filas;
+   int filas; 
    int columnas;
-   char **matriz;
+   char **matriz; //Matriz del mapa o jardín
 };
 
 
