@@ -8,6 +8,7 @@ static void crearConfiguracion(struct Data *data) //Con un puntero evitamos tene
     fprintf(configuracion,"NumeroOleadas=%d\n",data->numeroOleadas);
     fprintf(configuracion,"ResistenciaZombies=%d\n",data->resistenciaZombies);
     fprintf(configuracion,"ResistenciaCasa=%d\n",data->resistenciaCasa);
+    fprintf(configuracion,"ResistenciaPlantas=%d\n",data->resistenciaCasa);
     fprintf(configuracion,"FrecuenciaDisparoPlantas=%f\n",data->frecuenciaDisparoPlantas);
     fprintf(configuracion,"FrecuenciaSoles=%f\n",data->frecuenciaSoles);
 
@@ -16,7 +17,7 @@ static void crearConfiguracion(struct Data *data) //Con un puntero evitamos tene
 
 struct Data leerConfiguracion()
 {
-    struct Data data = {5,100,100,1.0f,10.0f}; //configuración por defecto
+    struct Data data = {5,1,1,1,1.0f,10.0f}; //configuración por defecto
 
     char linea[128];
     char atributo[128];
@@ -38,6 +39,7 @@ struct Data leerConfiguracion()
         if (strcmp(atributo,"NumeroOleadas") == 0){data.numeroOleadas = (int)valor;}
         else if ((strcmp(atributo,"ResistenciaZombies") == 0)){data.resistenciaZombies = (int)valor;}
         else if ((strcmp(atributo,"ResistenciaCasa") == 0)){data.resistenciaCasa = (int)valor;}
+        else if ((strcmp(atributo,"ResistenciaPlantas") == 0)){data.resistenciaPlantas = (int)valor;}
         else if ((strcmp(atributo,"FrecuenciaDisparoPlantas") == 0)){data.frecuenciaDisparoPlantas = valor;}
         else if ((strcmp(atributo,"FrecuenciaSoles") == 0)){data.frecuenciaSoles = valor;}
     }
