@@ -15,13 +15,16 @@ struct Data{
    int resistenciaPlantas; 
    float frecuenciaDisparoPlantas; //frecuencia medida en segundos
    float frecuenciaSoles;
+   float frecuenciaSpawnZombies; //5.0 segundos por defecto
+   float velocidadMovimientoZombies; // 1.0 segundos por casilla por defecto
+
 };
+
 struct Mapa{
    int filas; 
    int columnas;
    char **matriz; //Matriz del mapa o jardín
 };
-
 
 struct Data leerConfiguracion();
 struct Mapa* crearMapa(int filas, int columnas,int cantidadObstaculos);
