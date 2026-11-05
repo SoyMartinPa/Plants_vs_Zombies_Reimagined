@@ -1,10 +1,12 @@
 #include <stdio.h>
-#include "Entrada.h"
+#include <stdlib.h>
+#include <time.h>
+#include "Logica.h"
 
 int main(void)
 {
-    struct Data configuracion = leerConfiguracion(); //Ver info de DATA en Entrada.h
-    struct Mapa* jardin = cargarMapa(); //Jardin es una matriz Jardin[][]
+    srand(time(NULL)); //Semilla de inicialización
+    logica();
     
     return 0;
 }

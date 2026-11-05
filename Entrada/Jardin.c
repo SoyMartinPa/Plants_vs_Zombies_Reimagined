@@ -1,135 +1,133 @@
 #include "Entrada.h"
 
-struct Mapa* crearMapa(int filas, int columnas,int cantidadObstaculos) 
+//Reserva en el heap una matriz filas x columnas llena con el caracter 'relleno'
+static char** reservarMatriz(int filas, int columnas, char relleno)
 {
-    FILE *file = fopen("Archivos/Map.txt","w");
-    srand(time(NULL)); // Generar semilla aleatoria
+    char **m = malloc(filas * sizeof(char *));
+    if (m == NULL){printf("Error en la asignación de memoria\n"); exit(1);}
 
+    for (int i = 0; i < filas; i++)
+    {
+        m[i] = malloc((columnas + 1) * sizeof(char));
+        if (m[i] == NULL){printf("Error en la asignación de memoria\n"); exit(1);}
+        memset(m[i], relleno, columnas);
+        m[i][columnas] = '\0'; //Se agregó el terminador '\0' para evitar posibles problemas de lectura y/o parseo
+    }
+    return m;
+}
+
+//Crea un struct Mapa con las dos matrices ya reservadas (jardín y lógica) y llenas de '.'
+//Se usa tanto al crear un mapa nuevo como al cargarlo desde archivo
+static struct Mapa* reservarMapa(int filas, int columnas)
+{
     struct Mapa* mapa = malloc(sizeof(struct Mapa));
+    if (mapa == NULL){printf("Error en la asignación de memoria al Mapa\n"); exit(1);}
 
-    if (mapa == NULL) 
-    {
-        fclose(file);
-        printf("Error en la asignación de memoria al Mapa");
-        exit(1);
-    }
-
-    mapa->columnas = columnas;
     mapa->filas = filas;
-    mapa->matriz = malloc(filas * sizeof(char *));
-    for (int i = 0; i < filas; i++) {
-        mapa->matriz[i] = malloc((columnas + 1) * sizeof(char));
-    }; //Esto simplemente guarda dinamicamente memoria en el heap para la matriz jardin[][]
-
-
-    //Este for crea el mapa base. '.' es el suelo y 'H' es la casa (House)
-    for (int i = 0; i < filas; i++)
-    {
-        for (int j = 0; j < columnas; j++)
-        {
-            if (j == 0){mapa->matriz[i][j] = 'H';}
-            else{mapa->matriz[i][j] = '.';}
-        }
-        mapa->matriz[i][columnas] = '\0'; //Se agregó el terminador '\0' para evitar posibles problemas de lectura y/o parseo
-    }
-
-    //Agrega obstaculos a la matriz.
-    for (int i = 0; i < cantidadObstaculos; i++)
-    {
-        int fila = rand() % (filas); 
-        int columna = rand() % (columnas - 3) + 3; // el +3 es para obligar que no se generen obstaculos en las primeras casillas
-        mapa->matriz[fila][columna] = 'O'; 
-
-    }
-
-    //Esto guarda la matriz en el archivo Map.txt
-    for (int i = 0; i < filas; i++)
-    {
-        for (int j = 0; j < columnas; j++)
-        {
-            fprintf(file,"%c",mapa->matriz[i][j]);
-        }
-        fprintf(file,"\n");
-    }
-
-    fclose(file);
+    mapa->columnas = columnas;
+    mapa->matriz = reservarMatriz(filas, columnas, '.');
+    mapa->matrizLogica = reservarMatriz(filas, columnas, '.');
     return mapa;
 }
 
-//Esta es una función intermedia. Verifica si un archivo Map.txt es valido. Si no lo es
+//Libera la memoria dinamica utilizada por el mapa
+void liberarMapa(struct Mapa *mapa)
+{
+    if (mapa == NULL){return;}
+    for (int i = 0; i < mapa->filas; i++)
+    {
+        free(mapa->matriz[i]);
+        free(mapa->matrizLogica[i]);
+    }
+    free(mapa->matriz);
+    free(mapa->matrizLogica);
+    free(mapa);
+}
+
+//Escribe la matriz del jardín en el archivo indicado
+static void guardarMatriz(struct Mapa *mapa, const char *ruta)
+{
+    FILE *file = fopen(ruta,"w");
+    if (file == NULL){return;}
+
+    for (int i = 0; i < mapa->filas; i++)
+    {
+        fprintf(file,"%s\n",mapa->matriz[i]);
+    }
+    fclose(file);
+}
+
+struct Mapa* crearMapa(int filas, int columnas,int cantidadObstaculos) 
+{
+    struct Mapa* mapa = reservarMapa(filas, columnas);
+
+    //Mapa base. '.' es el suelo y 'H' es la casa (House)
+    for (int i = 0; i < filas; i++){mapa->matriz[i][0] = 'H';}
+
+    //Agrega obstaculos a la matriz.
+    if (columnas > 3){agregarObstaculos(mapa, cantidadObstaculos);}
+
+    guardarMatriz(mapa, "Archivos/Map.txt");
+    return mapa;
+}
+
+//Lee la siguiente línea NO vacía del archivo y le quita el '\n' y el '\r'. Retorna 0 si no quedan.
+static int leerLineaMapa(FILE *file, char *linea, int tamano)
+{
+    while (fgets(linea, tamano, file) != NULL)
+    {
+        linea[strcspn(linea, "\r\n")] = '\0';
+        if (linea[0] != '\0' && linea[0] != ' '){return 1;}
+    }
+    return 0;
+}
+
+//Una fila válida empieza con 'H' (la casa) y el resto solo puede ser '.' u 'O'
+static int lineaValida(const char *linea)
+{
+    if (linea[0] != 'H'){return 0;}
+    for (int i = 1; linea[i] != '\0'; i++)
+    {
+        if (linea[i] != '.' && linea[i] != 'O'){return 0;}
+    }
+    return 1;
+}
+
+//Esta es una funcion intermedia. Verifica si un archivo Map.txt es valido. Si no lo es
 //retorna NULL, en caso contrario devuelve un struct Mapa con la información del archivo
 static struct Mapa* validarArchivoMapa(FILE *file)
 {
-    char linea[128];
-    int filas = 1, columnas = 0;
+    char linea[256];
+    int filas = 0, columnas = 0;
 
-    if (fgets(linea,sizeof(linea),file) == NULL){return NULL;} //Si el archivo está vacio: NULL
-
-    for (int i = 0; i < strlen(linea) - 1; i++){
-        if (i != 0 && linea[i] == 'H'){return NULL;}
-        if (linea[i] != 'H' && linea[i] != '.' && linea[i] != 'O'){return NULL;} 
-    } //Si no tiene caracteres validos o en ubicaciones erroneas: NULL
-
-    linea[strcspn(linea, "\n")] = '\0'; //Simplemente para evitar errores de lectura (ultimo caracter = '\0')
-    columnas = strlen(linea);
-    if (columnas < 5){return NULL;} //Se pide un minimo de 5 columans
-
-    //Verifica que cada linea del archivo sea valida (similar al for de arriba)
-    while(fgets(linea,sizeof(linea),file) != NULL)
+    while (leerLineaMapa(file, linea, sizeof(linea)))
     {
-        
-        if (linea[0] == '\n' || linea[0] == ' '){continue;} 
-        linea[strcspn(linea, "\n")] = '\0';
-        if (strlen(linea) != columnas){return NULL;}
-
-        for (int i = 0; i < columnas - 1; i++){
-            if (i != 0 && linea[i] == 'H'){return NULL;}
-            if (linea[i] != 'H'  && linea[i] != '.' && linea[i] != 'O'){return NULL;}
+        if (filas == 0)
+        {
+            columnas = (int)strlen(linea);
+            if (columnas < 5){return NULL;} //Se pide un minimo de 5 columnas
         }
+        else if ((int)strlen(linea) != columnas){return NULL;} //todas las filas del mismo largo
 
+        if (!lineaValida(linea)){return NULL;}
         filas++;
     }
-    if (filas < 5){return NULL;}
+    if (filas < 5){return NULL;} //Si el archivo está vacío también cae aquí
 
     rewind(file); //Esto permite releer el archivo de nuevo.
 
-    struct Mapa* mapa = malloc(sizeof(struct Mapa));
-
-    if (mapa == NULL) 
-    {
-        fclose(file);
-        printf("Error en la asignación de memoria al Mapa");
-        exit(1);
-    }
-
-    mapa->matriz = malloc(filas * sizeof(char *));
-    for (int i = 0; i < filas; i++) {
-        mapa->matriz[i] = malloc((columnas + 1) * sizeof(char));
-    } //Se crea la matriz del mapa con memoria dinamica.
-    mapa->columnas = columnas;
-    mapa->filas = filas;
-    char c;
-    
-    //Cada char extraido del archivo se coloca en su columna y fila correspondiente
+    struct Mapa* mapa = reservarMapa(filas, columnas);
     for (int i = 0; i < filas; i++)
     {
-        int j = 0;
-        while ((c = fgetc(file)) != EOF && c != '\n') //Si 'false' pasa a la siguiente fila
-        {
-            if (j < columnas) {
-                mapa->matriz[i][j] = c;
-                j++;
-            }
-        }
-        mapa->matriz[i][columnas] = '\0'; 
+        leerLineaMapa(file, linea, sizeof(linea));
+        memcpy(mapa->matriz[i], linea, columnas);
     }
-
     return mapa;
 }
 
 //Lee el archivo Map.txt y retorna la matriz del mapa leido, en caso que el archivo
 //esté corrupto, se crea un nuevo mapa con parametros por defecto
-struct Mapa* cargarMapa()
+struct Mapa* cargarMapa(void)
 {
     const int filaDefecto = 5, columnaDefecto = 9, obstaculosDefecto = 5;
 
@@ -137,13 +135,12 @@ struct Mapa* cargarMapa()
     if (file == NULL){return (crearMapa(filaDefecto,columnaDefecto,obstaculosDefecto));}
     
     struct Mapa* mapa = validarArchivoMapa(file);
+    fclose(file);
+
     if (mapa == NULL){
-        fclose(file);
-        printf("El achivo del mapa se corrompió. Creando uno nuevo...");
+        printf("El archivo del mapa se corrompió. Creando uno nuevo...\n");
         return crearMapa(filaDefecto,columnaDefecto,obstaculosDefecto);
     }
-
-    fclose(file);
     return mapa;
 }
 
@@ -153,7 +150,7 @@ void agregarObstaculos(struct Mapa *mapa, int cantidadObstaculos)
     while (contador < cantidadObstaculos)
     {
         int fila = rand() % (mapa->filas);
-        int columna = rand() % (mapa->columnas - 3) + 3;
+        int columna = rand() % (mapa->columnas - 3) + 3; // el +3 evita obstaculos en las primeras casillas
         mapa->matriz[fila][columna] = 'O';
         contador++;
         //Habría que hacer una validación para no poner obstaculos encima de las plantas
@@ -166,15 +163,5 @@ void agregarObstaculos(struct Mapa *mapa, int cantidadObstaculos)
 //(Esta función es útil para guardar el estado actual de la partida)
 void guardarMapaEnArchivo(struct Mapa *mapa)
 {
-    FILE *file = fopen("Archivos/Guardado.txt","w");
-    
-    for (int i = 0; i < mapa->filas; i++)
-    {
-        for (int j = 0; j < mapa->columnas; j++)
-        {
-            fprintf(file,"%c",mapa->matriz[i][j]);
-        }
-        fprintf(file,"\n");
-    }
-    fclose(file);
+    guardarMatriz(mapa, "Archivos/Guardado.txt");
 }

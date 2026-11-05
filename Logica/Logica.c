@@ -1,163 +1,124 @@
-#include "Entrada.h"
 #include "Logica.h"
 
-    
-static void moverZombies(struct Mapa *mapa, int *vidaCasa)
+//Vuelve a dibujar matrizLogica: borra los zombies de la posición anterior (los proyectiles '-' se
+//conservan) y coloca los zombies de la lista en su posición actual ('Z').
+static void actualizarMatrizLogica(struct Mapa *jardin, Zombie *lista, int cantidad)
 {
-    for (int i = 0; i < mapa->filas; i++)
+    for (int i = 0; i < jardin->filas; i++){
+        for (int j = 0; j < jardin->columnas; j++){
+            if (jardin->matrizLogica[i][j] != '-'){jardin->matrizLogica[i][j] = '.';}
+        }
+    }
+    for (int i = 0; i < cantidad; i++){jardin->matrizLogica[lista[i].fila][lista[i].columna] = 'Z';}
+}
+
+//TEMPORAL: dibuja el jardín en consola mientras no exista GUI.c
+static void imprimirJardin(struct Mapa *jardin, int vidaCasa, int soles)
+{
+    printf("\033[H\033[J"); //limpia la consola
+    printf("Casa: %d  Soles: %d\n\n", vidaCasa, soles);
+    for (int i = 0; i < jardin->filas; i++){
+        for (int j = 0; j < jardin->columnas; j++){
+            char logico = jardin->matrizLogica[i][j];
+            putchar(logico != '.' ? logico : jardin->matriz[i][j]);
+        }
+        putchar('\n');
+    }
+    fflush(stdout);
+}
+
+void logica(void)
+{
+    struct Data data = leerConfiguracion(); //Ver info de DATA en Entrada.h
+    struct Mapa* jardin = cargarMapa(); //Jardin es una matriz Jardin[][]
+
+    Zombie* listaZombies = NULL;
+    int cantidadZombies = 0;
+    int capacidadZombies = 0;
+
+    int soles = 0;
+    int vidaCasa = (int)(data.resistenciaCasa * 100);
+
+    //Temporizadores: acumulan segundos y se reinician cuando llegan a su intervalo
+    float tiempoSpawn = 0.0f;
+    float tiempoSol = 0.0f;
+    float tiempoDisparo = 0.0f;
+    float tiempoProyectil = 0.0f;
+    float tiempoImprimir = 0.0f;
+
+    //PRUEBA: plantas de ejemplo. Borrar cuando exista pedirPlanta / la GUI
+    Plantar(jardin, 2, 2, PLANTA_LANZAGUISANTES);
+    Plantar(jardin, 0, 3, PLANTA_LANZAGUISANTES);
+
+    while (vidaCasa > 0)
     {
-        for (int j = 0; j < mapa->columnas; j++)
+        usleep(33333); //~30 frames por segundo (antes se usaba wait(), que NO es una pausa: espera hijos)
+
+        eliminarZombiesMuertos(listaZombies, &cantidadZombies);
+        actualizarMatrizLogica(jardin, listaZombies, cantidadZombies);
+
+        tiempoSpawn += DT;
+        tiempoSol += DT;
+        tiempoDisparo += DT;
+        tiempoProyectil += DT;
+        tiempoImprimir += DT;
+
+        //Spawn de zombies (usa la frecuencia del Config.ini)
+        if (tiempoSpawn >= data.frecuenciaSpawnZombies)
         {
-            if (mapa->matriz[i][j] == 'Z') // falta hacer la diferencia de tipo de zombies y todos se mover igual (lo mas probable)
+            Zombie *nuevo = SpawnZombieAleatoreo(jardin, data);
+            if (nuevo != NULL)
             {
-                int resultado = Movimiento(mapa, i, j);
- 
-                if (resultado == 2)   
-                {
-                    *vidaCasa = *vidaCasa - 1;
-                }
+                agregarZombie(&listaZombies, &cantidadZombies, &capacidadZombies, *nuevo);
+                jardin->matrizLogica[nuevo->fila][nuevo->columna] = 'Z';
+                free(nuevo);
             }
+            tiempoSpawn = 0.0f;
         }
-    }
-}
 
-static void spawnAleatorio(struct Mapa *mapa,char TipoZombie){
-
-    int fila = rand() % mapa->filas;
-    SpawnZombie(mapa, fila, mapa->columnas - 1, TipoZombie);
-}
-
-static void pedirPlanta(struct Mapa *mapa){
-    int fila, columna; // Nose hacerlo :(
-
-}
-
-static void DisparoPlantas(struct Mapa *mapa){
-
-    for (int i = 0; i < mapa->filas; i++)
-    {
-        for (int j = 0; j < mapa->columnas - 1; j++){
-        
-            if (mapa->matriz[i][j] == '2'){
-            
-                if (mapa->matriz[i][j + 1] == 'Z'){
-                
-                    //funcion dañar zombie
-                }
-                else if (mapa->matriz[i][j + 1] == '.'){
-                
-                    mapa->matriz[i][j + 1] = '*';
-                }
-            }
-        }
-    }
-}
-
-static void moverProyectiles(struct Mapa *mapa)
-{
-    for (int i = 0; i < mapa->filas; i++)
-    {
-        
-        for (int j = mapa->columnas - 1; j >= 0; j--)
+        //Aparece un sol
+        if (tiempoSol >= data.frecuenciaSoles)
         {
-            if (mapa->matriz[i][j] == '*')
-            {
-                mapa->matriz[i][j] = '.';   
-
-                if (j + 1 < mapa->columnas)
-                {
-                    char columna_S = mapa->matriz[i][j + 1];
-
-                    if (columna_S == 'Z')
-                    {
-                        //dañar zombie
-                    }
-                    else if (columna_S == '.')
-                    {
-                        mapa->matriz[i][j + 1] = '*';  // sigue avanzando
-                    }
-                    
-                }
-            }
+            soles += 25;
+            tiempoSol = 0.0f;
         }
-    }
-} // problemas cuando hay una planta adelante !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-void logica()
-{
-    struct Data configuracion = leerConfiguracion(); //Ver info de DATA en Entrada.h
-    struct Mapa* jardin = cargarMapa(); //Jardin es una matriz Jardin[][]}
-
-
-    int vidaCasa= configuracion.resistenciaCasa;
-    int Cantidad_soles=0;
-    double intervalo_proyectil=0; // discutir!!!!!!!!!!!!!
-    double intervalo_movimiento = 1.0; // se tiene que  cambiar?
-    double intervalo_spawn = 5.0;
-    double intervalo_disparo = configuracion.frecuenciaDisparoPlantas;
-    double intervalo_sol = configuracion.frecuenciaSoles;
-    double ultimo_movimiento = 0.0;
-    double ultimo_spawn = 0.0;
-    double ultimo_disparo = 0.0;
-    double ultimo_sol = 0.0;
-    double ultimo_proyectil = 0.0;
-
-
-
-
-
-
-    while (vidaCasa > 0){
-        double tiempoactual = (double)clock()/ CLOCKS_PER_SEC;
-
-        if (tiempoactual-ultimo_movimiento>=intervalo_movimiento){
-        
-            moverZombies(jardin, &vidaCasa);
-            ultimo_movimiento= tiempoactual;
-        }
-        if (tiempoactual-ultimo_spawn>=ultimo_spawn){
-        
-            spawnAleatorio(jardin,'Z');
-            ultimo_spawn=tiempoactual;
-        }
-        if (tiempoactual - ultimo_disparo>= intervalo_disparo){
-            DisparoPlantas(jardin);
-            ultimo_disparo = tiempoactual;
-        if (tiempoactual - ultimo_proyectil >= intervalo_proyectil)
+        //Movimiento de zombies (usa la velocidad del Config.ini)
+        for (int i = 0; i < cantidadZombies; i++)
         {
-            moverProyectiles(jardin);
-            ultimo_proyectil = tiempoactual;
+            if (listaZombies[i].vida <= 0){continue;}
+
+            listaZombies[i].movimiento += DT;
+            if (listaZombies[i].movimiento < data.velocidadMovimientoZombies){continue;}
+            listaZombies[i].movimiento = 0.0f;
+
+            int resultado = moverZombie(&listaZombies[i], jardin);
+            if (resultado == MOV_CASA){vidaCasa -= DANIO_ZOMBIE_CASA;}
+            //TODO: if (resultado == MOV_PLANTA) -> dañar la planta (falta guardar la vida de cada planta)
         }
+
+        //Las plantas disparan
+        if (tiempoDisparo >= data.frecuenciaDisparoPlantas)
+        {
+            disparoPlantas(jardin, listaZombies, cantidadZombies);
+            tiempoDisparo = 0.0f;
         }
-        if (tiempoactual - ultimo_sol >= intervalo_sol){
-            Cantidad_soles+=25;
-            ultimo_sol = tiempoactual;
-            
+
+        //Los proyectiles avanzan (antes este if estaba DENTRO del de disparo)
+        if (tiempoProyectil >= INTERVALO_PROYECTIL)
+        {
+            moverProyectiles(jardin, listaZombies, cantidadZombies);
+            tiempoProyectil = 0.0f;
+        }
+
+        if (tiempoImprimir >= 0.2f)
+        {
+            imprimirJardin(jardin, vidaCasa, soles);
+            tiempoImprimir = 0.0f;
         }
     }
+
+    printf("\nLos zombies se comieron tu casa. Fin del juego.\n");
+    free(listaZombies);
+    liberarMapa(jardin);
 }
-  
-
-// problemas con Como dañar los zombies y plantas con el tema de la vida y hacer la diferencia entre plantar cada cosa 
-// crear sunflower production planta
-        
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-    
-

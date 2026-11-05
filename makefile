@@ -1,4 +1,8 @@
-PVZR: Main.c Entrada/Configuracion.c Entrada/Jardin.c Logica/Logica.c GUI/GUI.c Entrada/Entrada.h
-	gcc -Wall Main.c Entrada/Configuracion.c Entrada/Jardin.c Logica/Logica.c GUI/GUI.c -IEntrada -o PVZR
+SRC = $(wildcard *.c Entrada/*.c Logica/*.c GUI/*.c)
+HDR = $(wildcard Entrada/*.h Logica/*.h)
+
+PVZR: $(SRC) $(HDR)
+	gcc -Wall -Wextra -g $(SRC) -IEntrada -ILogica -o PVZR
+
 clean:
 	rm -f PVZR
