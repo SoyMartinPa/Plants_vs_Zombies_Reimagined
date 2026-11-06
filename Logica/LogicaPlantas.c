@@ -1,17 +1,79 @@
 #include "Logica.h"
 
+//Plantas que hay en el jardín: cada tipo tiene su arreglo (máximo 100) y su cantidad
+static LanzaGuisantes lanzaguisantes[100];
+static int cantidadLanzaguisantes = 0;
+static Girasol girasoles[100];
+static int cantidadGirasoles = 0;
+static Nuez nueces[100];
+static int cantidadNueces = 0;
+
 //Coloca una planta en el jardín si la casilla es suelo libre ('.') y no hay un zombie encima
 int Plantar(struct Mapa *mapa, int fila, int columna, char planta)
 {
     if (fila < 0 || fila >= mapa->filas || columna < 0 || columna >= mapa->columnas){return 0;}
+    if (mapa->matriz[fila][columna] != '.' || mapa->matrizLogica[fila][columna] == 'Z'){return 0;}
 
-    if (mapa->matriz[fila][columna] == '.' && mapa->matrizLogica[fila][columna] != 'Z')
+    if (planta == '2' && cantidadLanzaguisantes < 100)
     {
-        mapa->matriz[fila][columna] = planta;
-        return 1;
+        LanzaGuisantes nueva = {fila, columna, 50, 0.0f}; 
+        lanzaguisantes[cantidadLanzaguisantes] = nueva;
+        cantidadLanzaguisantes++;
     }
-    return 0;
+    else if (planta == '1' && cantidadGirasoles < 100)
+    {
+        Girasol nueva = {fila, columna, 50, 0.0f}; 
+        girasoles[cantidadGirasoles] = nueva;
+        cantidadGirasoles++;
+    }
+    else if (planta == '3' && cantidadNueces < 100)
+    {
+        Nuez nueva = {fila, columna, 400}; 
+        nueces[cantidadNueces] = nueva;
+        cantidadNueces++;
+    }
+    else{return 0;} 
+
+    mapa->matriz[fila][columna] = planta;
+    return 1;
 }
+
+void eliminarPlantasMuertas(struct Mapa *mapa)
+{
+    for (int i = 0; i < cantidadLanzaguisantes;)
+    {
+        if (lanzaguisantes[i].vida <= 0)
+        {
+            mapa->matriz[lanzaguisantes[i].fila][lanzaguisantes[i].columna] = '.';
+            lanzaguisantes[i] = lanzaguisantes[cantidadLanzaguisantes - 1];
+            cantidadLanzaguisantes--;
+        }
+        else{i++;}
+    }
+
+    for (int i = 0; i < cantidadGirasoles;)
+    {
+        if (girasoles[i].vida <= 0)
+        {
+            mapa->matriz[girasoles[i].fila][girasoles[i].columna] = '.';
+            girasoles[i] = girasoles[cantidadGirasoles - 1];
+            cantidadGirasoles--;
+        }
+        else{i++;}
+    }
+
+    for (int i = 0; i < cantidadNueces; )
+    {
+        if (nueces[i].vida <= 0)
+        {
+            mapa->matriz[nueces[i].fila][nueces[i].columna] = '.';
+            nueces[i] = nueces[cantidadNueces - 1];
+            cantidadNueces--;
+        }
+        else{i++;}
+    }
+}
+
 
 //Hay algún zombie en la misma fila, a la derecha de la columna dada
 static int hayZombieAdelante(struct Mapa *mapa, int fila, int columna)
@@ -36,8 +98,24 @@ void disparoPlantas(struct Mapa *mapa, Zombie* lista, int cantidad)
             if (!hayZombieAdelante(mapa, i, j)){continue;}
 
             char siguiente = mapa->matrizLogica[i][j + 1];
-            if (siguiente == 'Z'){danarZombie(lista, cantidad, i, j + 1, DANIO_GUISANTE);}
+            if (siguiente == 'Z'){danarZombie(lista, cantidad, i, j + 1, DAÑO_GUISANTE);}
             else if (siguiente == '.'){mapa->matrizLogica[i][j + 1] = '-';}
         }
     }
+}
+
+int generarSoles(void)
+{
+    int soles = 0;
+
+    for (int i = 0; i < cantidadGirasoles; i++)
+    {
+        girasoles[i].movimientoSol += DT;
+        if (girasoles[i].movimientoSol >= 10.0f)
+        {
+            girasoles[i].movimientoSol = 0.0f;
+            soles += 25;
+        }
+    }
+    return soles;
 }

@@ -64,7 +64,7 @@ int moverZombie(Zombie *zombie, struct Mapa *mapa)
     if (logico == 'Z'){return MOV_BLOQUEADO;}
 
     //Si caminó justo hacia un guisante, este lo golpea (si no, el guisante se perdería)
-    if (logico == '-'){zombie->vida -= DANIO_GUISANTE;}
+    if (logico == '-'){zombie->vida -= DAÑO_GUISANTE;}
 
     //Se actualiza la matrizLogica al tiro para que el zombie de atrás vea la posición correcta
     mapa->matrizLogica[fila][columna] = '.';

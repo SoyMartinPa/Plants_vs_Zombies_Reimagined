@@ -62,6 +62,9 @@ void danarZombie(Zombie* lista, int cantidad, int fila, int columna, int danio);
 
 //LogicaPlantas.c
 int Plantar(struct Mapa *mapa, int fila, int columna, char planta);
+void danarPlanta(struct Mapa *mapa, int fila, int columna);
+void eliminarPlantasMuertas(struct Mapa *mapa);
+int generarSoles(void);
 void disparoPlantas(struct Mapa *mapa, Zombie* lista, int cantidad);
 
 //LogicaProyectil.c
