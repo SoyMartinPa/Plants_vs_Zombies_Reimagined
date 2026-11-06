@@ -1,8 +1,11 @@
 #include "Logica.h"
-#include <ncurses.h>
 
 //Vuelve a dibujar matrizLogica: borra los zombies de la posición anterior (los proyectiles '-' se
 //conservan) y coloca los zombies de la lista en su posición actual ('Z').
+
+int soles = 100;//Como variable global para que pueda ser utilizada por las demás funciones
+
+
 static void actualizarMatrizLogica(struct Mapa *jardin, Zombie *lista, int cantidad)
 {
     for (int i = 0; i < jardin->filas; i++){
@@ -12,13 +15,6 @@ static void actualizarMatrizLogica(struct Mapa *jardin, Zombie *lista, int canti
     }
     for (int i = 0; i < cantidad; i++){jardin->matrizLogica[lista[i].fila][lista[i].columna] = 'Z';}
 }
-//Casilla marcada por el jugador y planta elegida
-typedef struct
-{
-    int fila;
-    int columna;
-    char planta; //'1', '2' o '3'
-} Movimiento_Usuario;
 
 //Lee una tecla si se pulsó alguna (sin detener el juego):
 //flechas mueven el cursor, 1/2/3 eligen la planta y espacio o Enter planta
@@ -31,7 +27,7 @@ static void leerTeclado(Movimiento_Usuario *movimiento, struct Mapa *jardin)
     else if (tecla == KEY_LEFT && movimiento->columna > 1){movimiento->columna--;} //la columna 0 es la casa
     else if (tecla == KEY_RIGHT && movimiento->columna < jardin->columnas - 1){movimiento->columna++;}
     else if (tecla == '1' || tecla == '2' || tecla == '3'){movimiento->planta = (char)tecla;}
-    else if (tecla == ' ' || tecla == '\n'){Plantar(jardin, movimiento->fila, movimiento->columna, movimiento->planta);}
+    else if (tecla == ' ' || tecla == '\n'){plantar(jardin, movimiento->fila, movimiento->columna, movimiento->planta, &soles);}
 }
 
 //TEMPORAL: dibuja el jardín en consola mientras no exista GUI.c (el cursor se ve con colores invertidos)
@@ -61,7 +57,6 @@ void logica(void)
     int cantidadZombies = 0;
     int capacidadZombies = 0;
 
-    int soles = 0;
     int vidaCasa = (int)(data.resistenciaCasa * 100);
 
     Movimiento_Usuario movimiento = {0, 0, '.'};
@@ -83,7 +78,7 @@ void logica(void)
 
     while (vidaCasa > 0)
     {
-        usleep(33333); //~30 frames por segundo (antes se usaba wait(), que NO es una pausa: espera hijos)
+        usleep(33333); //~30 frames por segundo
         leerTeclado(&movimiento, jardin);
         eliminarZombiesMuertos(listaZombies, &cantidadZombies);
         eliminarPlantasMuertas(jardin);
@@ -98,7 +93,7 @@ void logica(void)
         //Spawn de zombies (usa la frecuencia del Config.ini)
         if (tiempoSpawn >= data.frecuenciaSpawnZombies)
         {
-            Zombie *nuevo = SpawnZombieAleatoreo(jardin, data);
+            Zombie *nuevo = spawnZombieAleatoreo(jardin, data);
             if (nuevo != NULL)
             {
                 agregarZombie(&listaZombies, &cantidadZombies, &capacidadZombies, *nuevo);
@@ -129,8 +124,8 @@ void logica(void)
             listaZombies[i].movimiento = 0.0f;
 
             int resultado = moverZombie(&listaZombies[i], jardin);
-            if (resultado == MOV_CASA){vidaCasa -= DANIO_ZOMBIE_CASA;}
-            if (resultado == MOV_PLANTA){danarPlanta(jardin, listaZombies[i].fila, listaZombies[i].columna - 1);}
+            if (resultado == MOV_CASA){vidaCasa -= DAÑO_ZOMBIE_CASA;}
+            if (resultado == MOV_PLANTA){dañarPlantas(listaZombies[i].fila, listaZombies[i].columna - 1);}
         }
 
         //Las plantas disparan

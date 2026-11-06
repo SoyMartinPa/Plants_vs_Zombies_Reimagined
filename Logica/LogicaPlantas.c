@@ -9,28 +9,31 @@ static Nuez nueces[100];
 static int cantidadNueces = 0;
 
 //Coloca una planta en el jardín si la casilla es suelo libre ('.') y no hay un zombie encima
-int Plantar(struct Mapa *mapa, int fila, int columna, char planta)
+int plantar(struct Mapa *mapa, int fila, int columna, char planta, int* soles)
 {
     if (fila < 0 || fila >= mapa->filas || columna < 0 || columna >= mapa->columnas){return 0;}
     if (mapa->matriz[fila][columna] != '.' || mapa->matrizLogica[fila][columna] == 'Z'){return 0;}
 
-    if (planta == '2' && cantidadLanzaguisantes < 100)
+    if (planta == '2' && cantidadLanzaguisantes < 100 && *soles >= 100)
     {
         LanzaGuisantes nueva = {fila, columna, 50, 0.0f}; 
         lanzaguisantes[cantidadLanzaguisantes] = nueva;
         cantidadLanzaguisantes++;
+        *soles = *soles - 100;
     }
-    else if (planta == '1' && cantidadGirasoles < 100)
+    else if (planta == '1' && cantidadGirasoles < 100 && *soles >= 50)
     {
         Girasol nueva = {fila, columna, 50, 0.0f}; 
         girasoles[cantidadGirasoles] = nueva;
         cantidadGirasoles++;
+        *soles = *soles - 50;
     }
-    else if (planta == '3' && cantidadNueces < 100)
+    else if (planta == '3' && cantidadNueces < 100 && *soles >= 150)
     {
         Nuez nueva = {fila, columna, 400}; 
         nueces[cantidadNueces] = nueva;
         cantidadNueces++;
+        *soles = *soles - 150;
     }
     else{return 0;} 
 
@@ -98,12 +101,13 @@ void disparoPlantas(struct Mapa *mapa, Zombie* lista, int cantidad)
             if (!hayZombieAdelante(mapa, i, j)){continue;}
 
             char siguiente = mapa->matrizLogica[i][j + 1];
-            if (siguiente == 'Z'){danarZombie(lista, cantidad, i, j + 1, DAÑO_GUISANTE);}
+            if (siguiente == 'Z'){dañarZombie(lista, cantidad, i, j + 1, DAÑO_GUISANTE);}
             else if (siguiente == '.'){mapa->matrizLogica[i][j + 1] = '-';}
         }
     }
 }
 
+//Genera los soles de los girasoles
 int generarSoles(void)
 {
     int soles = 0;
@@ -118,4 +122,30 @@ int generarSoles(void)
         }
     }
     return soles;
+}
+
+int dañarPlantas(int fila, int columna)
+{
+    int plantasTotales = cantidadGirasoles + cantidadLanzaguisantes + cantidadNueces;
+    if (plantasTotales >= 100){plantasTotales = 100;}
+
+    for (int i = 0; i < plantasTotales; i++)
+    {
+        if (girasoles[i].fila == fila && girasoles[i].columna == columna && girasoles[i].vida > 0)
+        {
+            girasoles[i].vida -= DAÑO_ZOMBIES_PLANTAS;
+            return 1;
+        }
+        if (lanzaguisantes[i].fila == fila && lanzaguisantes[i].columna == columna && lanzaguisantes[i].vida > 0)
+        {
+            lanzaguisantes[i].vida -= DAÑO_ZOMBIES_PLANTAS;
+            return 1;
+        }
+        if (nueces[i].fila == fila && nueces[i].columna == columna && nueces[i].vida > 0)
+        {
+            nueces[i].vida -= DAÑO_ZOMBIES_PLANTAS;
+            return 1;
+        }
+    }
+    return 0;
 }

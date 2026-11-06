@@ -3,12 +3,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <ncurses.h>
 #include "Entrada.h"
+
+//Casilla marcada por el jugador y planta elegida
+typedef struct
+{
+    int fila;
+    int columna;
+    char planta; //'1', '2' o '3'
+} Movimiento_Usuario;
 
 //Tiempo que dura un "frame" (30 por segundo). Todos los temporizadores avanzan en DT por vuelta.
 #define DT 0.0333f
 #define DAÑO_GUISANTE 20
-#define DANIO_ZOMBIE_CASA 10        //daño que hace un zombie a la casa por cada "mordida"
+#define DAÑO_ZOMBIE_CASA 10        //daño que hace un zombie a la casa por cada "mordida"
+#define DAÑO_ZOMBIES_PLANTAS 5      
 #define INTERVALO_PROYECTIL 0.25f   //segundos que tarda un guisante en avanzar una casilla
 #define PLANTA_LANZAGUISANTES '2'
 
@@ -54,15 +64,15 @@ static inline int esPlanta(char c){return c >= '1' && c <= '9';}
 void logica(void);
 
 //LogicaZombies.c
-Zombie* SpawnZombieAleatoreo(struct Mapa *mapa, struct Data data);
+Zombie* spawnZombieAleatoreo(struct Mapa *mapa, struct Data data);
 int moverZombie(Zombie *zombie, struct Mapa *mapa);
 void agregarZombie(Zombie** lista, int* cantidad, int* capacidad, Zombie nuevo);
 void eliminarZombiesMuertos(Zombie* lista, int* cantidad);
-void danarZombie(Zombie* lista, int cantidad, int fila, int columna, int danio);
+void dañarZombie(Zombie* lista, int cantidad, int fila, int columna, int danio);
 
 //LogicaPlantas.c
-int Plantar(struct Mapa *mapa, int fila, int columna, char planta);
-void danarPlanta(struct Mapa *mapa, int fila, int columna);
+int plantar(struct Mapa *mapa, int fila, int columna, char planta, int* soles);
+int dañarPlantas(int fila, int columna);
 void eliminarPlantasMuertas(struct Mapa *mapa);
 int generarSoles(void);
 void disparoPlantas(struct Mapa *mapa, Zombie* lista, int cantidad);

@@ -2,7 +2,8 @@
 
 //Spawnea un zombie aleatorio (normal, con cono o con casco) en la última columna del jardin
 //Si la última columna está ya ocupada por otros zombies en todas las filas, no se crea el zombie.
-Zombie* SpawnZombieAleatoreo(struct Mapa *mapa, struct Data data)
+//Falta distingirlos con un 'char' para cada helment
+Zombie* spawnZombieAleatoreo(struct Mapa *mapa, struct Data data)
 {
     //Se juntan las filas cuya última casilla está libre y se elige una al azar
     //(reemplaza el while(1) con 'filasVisitadas', que hacía lo mismo de forma más larga)
@@ -74,7 +75,7 @@ int moverZombie(Zombie *zombie, struct Mapa *mapa)
 }
 
 //Resta 'daño al zombie que esté en (fila, columna), si hay alguno
-void danarZombie(Zombie* lista, int cantidad, int fila, int columna, int danio)
+void dañarZombie(Zombie* lista, int cantidad, int fila, int columna, int danio)
 {
     for (int i = 0; i < cantidad; i++)
     {

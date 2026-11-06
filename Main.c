@@ -3,7 +3,6 @@
 #include <time.h>
 #include "Logica.h"
 
-
 #ifdef _WIN32
 #include <windows.h>
 void activarANSI() {
@@ -20,7 +19,6 @@ int main(void)
     #ifdef _WIN32
     activarANSI();
     #endif
-
 
     srand(time(NULL)); //Semilla de inicialización
     logica();
