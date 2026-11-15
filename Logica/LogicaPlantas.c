@@ -9,6 +9,8 @@ static Nuez nueces[100];
 static int cantidadNueces = 0;
 static PetaCereza cerezas[100];
 static int cantidadCerezas = 0;
+static Ajo ajos[100];
+static int cantidadAjos = 0;
 
 //Coloca una planta en el jardín si la casilla es suelo libre ('.') y no hay un zombie encima
 int plantar(struct Mapa *mapa, int fila, int columna, char planta, int* soles)
@@ -43,6 +45,13 @@ int plantar(struct Mapa *mapa, int fila, int columna, char planta, int* soles)
         cerezas[cantidadCerezas] = nueva;
         cantidadCerezas++;
         *soles = *soles - 150;
+    }
+    else if (planta == '5' && cantidadAjos < 100 && *soles >= 50)
+    {
+        Ajo nueva = {fila, columna, 200}; 
+        ajos[cantidadAjos] = nueva;
+        cantidadAjos++;
+        *soles = *soles - 50;
     }
     else{return 0;} 
 
@@ -81,6 +90,16 @@ void eliminarPlantasMuertas(struct Mapa *mapa)
             mapa->matriz[nueces[i].fila][nueces[i].columna] = '.';
             nueces[i] = nueces[cantidadNueces - 1];
             cantidadNueces--;
+        }
+        else{i++;}
+    }
+    for (int i = 0; i < cantidadAjos; )
+    {
+        if (ajos[i].vida <= 0)
+        {
+            mapa->matriz[ajos[i].fila][ajos[i].columna] = '.';
+            ajos[i] = ajos[cantidadAjos - 1];
+            cantidadAjos--;
         }
         else{i++;}
     }
@@ -183,7 +202,7 @@ int generarSoles(void)
 
 int dañarPlantas(int fila, int columna, int daño)
 {
-    int plantasTotales = cantidadGirasoles + cantidadLanzaguisantes + cantidadNueces;
+    int plantasTotales = cantidadGirasoles + cantidadLanzaguisantes + cantidadNueces + cantidadAjos;
     if (plantasTotales >= 100){plantasTotales = 100;}
 
     for (int i = 0; i < plantasTotales; i++)
@@ -201,6 +220,11 @@ int dañarPlantas(int fila, int columna, int daño)
         if (nueces[i].fila == fila && nueces[i].columna == columna && nueces[i].vida > 0)
         {
             nueces[i].vida -= daño;
+            return 1;
+        }
+        if (ajos[i].fila == fila && ajos[i].columna == columna && ajos[i].vida > 0)
+        {
+            ajos[i].vida -= daño;
             return 1;
         }
     }

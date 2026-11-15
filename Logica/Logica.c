@@ -128,6 +128,7 @@ void logica(void)
             int resultado = moverZombie(&listaZombies[i], jardin);
             if (resultado == MOV_CASA){vidaCasa -= DAÑO_ZOMBIE_CASA;}
             if (resultado == MOV_PLANTA){dañarPlantas(listaZombies[i].fila, listaZombies[i].columna - 1, DAÑO_ZOMBIES_PLANTAS);}
+            if (resultado == MOV_AJO){dañarPlantas(listaZombies[i].fila, listaZombies[i].columna - 1, DAÑO_ZOMBIES_PLANTAS*0.5);}
         }
 
         //Las plantas disparan

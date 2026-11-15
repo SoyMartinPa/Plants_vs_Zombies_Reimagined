@@ -24,7 +24,7 @@ typedef struct
 #define DAÑO_PETACEREZA 300
 
 //Resultados de moverZombie
-enum { MOV_BLOQUEADO = 0, MOV_AVANZO = 1, MOV_CASA = 2, MOV_PLANTA = 3 };
+enum { MOV_BLOQUEADO = 0, MOV_AVANZO = 1, MOV_CASA = 2, MOV_PLANTA = 3, MOV_AJO = 4};
 
 typedef struct
 {
@@ -65,8 +65,15 @@ typedef struct
     float tiempoExplosion; 
 } PetaCereza ;
 
+typedef struct
+{
+    int fila;
+    int columna;
+    int vida; 
+} Ajo ;
+
 //Las plantas se guardan en 'matriz' como un dígito '1'..'9'
-static inline int esPlanta(char c){return c >= '1' && c <= '9';}
+static inline int esPlanta(char c){return c >= '1' && c <= '5';}
 
 //Logica.c
 void logica(void);

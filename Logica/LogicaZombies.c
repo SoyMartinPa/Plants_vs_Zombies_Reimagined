@@ -43,6 +43,11 @@ Zombie* spawnZombieAleatoreo(struct Mapa *mapa, struct Data data)
 
     return zombie;
 }
+static int casillaDisponible(struct Mapa *mapa, int fila, int columna)
+{
+    return mapa->matriz[fila][columna] == '.' &&
+           mapa->matrizLogica[fila][columna] == '.';
+}
 
 //Intenta avanzar el zombie una casilla hacia la izquierda. Retorna:
 //  MOV_AVANZO    se movió
@@ -61,15 +66,54 @@ int moverZombie(Zombie *zombie, struct Mapa *mapa)
     char logico = mapa->matrizLogica[fila][siguiente];
 
     if (suelo == 'H'){return MOV_CASA;}
-    if (esPlanta(suelo)){return MOV_PLANTA;}
+    if (suelo>= '1' && suelo <= '4'){return MOV_PLANTA;}
     if (logico == 'Z'){return MOV_BLOQUEADO;}
 
     //Si caminó justo hacia un guisante, este lo golpea (si no, el guisante se perdería)
     if (logico == '-'){zombie->vida -= DAÑO_GUISANTE;}
 
+    //Lógica del ajo
+ if (suelo == '5')
+    {
+        int direccion;
+
+        if (fila == 0)
+        {
+            direccion = 1;
+        }
+        else if (fila == mapa->filas - 1)
+        {
+            direccion = -1;
+        }
+        else
+        {
+            int azar = rand() % 2;
+            direccion = (azar == 0) ? -1 : 1;
+        }
+
+        int nuevaFila = fila + direccion;
+
+        // Si la primera dirección está ocupada, probamos la contraria
+        if (!casillaDisponible(mapa, nuevaFila, columna))
+        {
+            if (fila == 0 || fila == mapa->filas - 1)
+            {
+                return MOV_PLANTA;
+            }
+
+            direccion *= -1;
+            nuevaFila = fila + direccion;
+
+            if (!casillaDisponible(mapa, nuevaFila, columna))
+            {
+                return MOV_PLANTA;
+            }
+        }
+
+        zombie->fila = nuevaFila;
+        return MOV_AJO;
+    }
     //Se actualiza la matrizLogica al tiro para que el zombie de atrás vea la posición correcta
-    mapa->matrizLogica[fila][columna] = '.';
-    mapa->matrizLogica[fila][siguiente] = 'Z';
     zombie->columna = siguiente;
     return MOV_AVANZO;
 }
