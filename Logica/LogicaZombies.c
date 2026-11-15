@@ -3,7 +3,7 @@
 //Spawnea un zombie aleatorio (normal, con cono o con casco) en la última columna del jardin
 //Si la última columna está ya ocupada por otros zombies en todas las filas, no se crea el zombie.
 //Falta distingirlos con un 'char' para cada helment
-Zombie* spawnZombieAleatoreo(struct Mapa *mapa, struct Data data)
+Zombie* spawnZombieAleatoreo(struct Mapa *mapa, struct Data data,int oleadaActual)
 {
     //Se juntan las filas cuya última casilla está libre y se elige una al azar
     //(reemplaza el while(1) con 'filasVisitadas', que hacía lo mismo de forma más larga)
@@ -28,21 +28,32 @@ Zombie* spawnZombieAleatoreo(struct Mapa *mapa, struct Data data)
     zombie->movimiento = 0.0f; //antes: rand()%5 + 100 (sumaba 100 en vez de ser un valor entre 0 y 5)
 
     int probabilidadArmadura = rand() % 100;
+    
+    float probabilidadCasco = 10 * pow(1.10, oleadaActual - 1);
+    float probabilidadCono = 30 * pow(1.15, oleadaActual - 1);
 
-    if (probabilidadArmadura < 60){
-        zombie->armadura = 0;
-    }
-    else if (probabilidadArmadura < 90){
-        zombie->armadura = 1;
-        zombie->vida = (int)(zombie->vida * 1.5);
-    }
-    else{
+    if (probabilidadCasco > 80)
+        probabilidadCasco = 80;
+
+    if (probabilidadCono > 90)
+        probabilidadCono = 90;
+
+    if (probabilidadArmadura < probabilidadCasco) {
         zombie->armadura = 2;
-        zombie->vida = zombie->vida * 2;
+        zombie->vida *= 2;
+    }
+    else if (probabilidadArmadura < probabilidadCono) {
+        zombie->armadura = 1;
+        zombie->vida = (int)(zombie->vida * 1.5f);
+    }
+    else {
+        zombie->armadura = 0;
     }
 
     return zombie;
 }
+
+
 static int casillaDisponible(struct Mapa *mapa, int fila, int columna)
 {
     return mapa->matriz[fila][columna] == '.' &&

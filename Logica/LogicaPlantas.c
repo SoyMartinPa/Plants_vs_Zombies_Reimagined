@@ -20,21 +20,21 @@ int plantar(struct Mapa *mapa, int fila, int columna, char planta, int* soles)
 
     if (planta == '2' && cantidadLanzaguisantes < 100 && *soles >= 100)
     {
-        LanzaGuisantes nueva = {fila, columna, 50, 0.0f}; 
+        LanzaGuisantes nueva = {fila, columna, 250 , 0.0f}; 
         lanzaguisantes[cantidadLanzaguisantes] = nueva;
         cantidadLanzaguisantes++;
         *soles = *soles - 100;
     }
     else if (planta == '1' && cantidadGirasoles < 100 && *soles >= 50)
     {
-        Girasol nueva = {fila, columna, 50, 0.0f}; 
+        Girasol nueva = {fila, columna, 150, 0.0f}; 
         girasoles[cantidadGirasoles] = nueva;
         cantidadGirasoles++;
         *soles = *soles - 50;
     }
-    else if (planta == '3' && cantidadNueces < 100 && *soles >= 150)
+    else if (planta == '3' && cantidadNueces < 100 && *soles >= 50)
     {
-        Nuez nueva = {fila, columna, 400}; 
+        Nuez nueva = {fila, columna, 1000}; 
         nueces[cantidadNueces] = nueva;
         cantidadNueces++;
         *soles = *soles - 150;

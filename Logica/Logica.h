@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <ncurses.h>
+#include <math.h>
 #include "Entrada.h"
 
 //Casilla marcada por el jugador y planta elegida
@@ -100,7 +101,7 @@ static inline int esPlanta(char c){return c >= '1' && c <= '5';}
 void logica(struct Data data, struct Mapa* jardin, int solesIniciales);
 
 //LogicaZombies.c
-Zombie* spawnZombieAleatoreo(struct Mapa *mapa, struct Data data);
+Zombie* spawnZombieAleatoreo(struct Mapa *mapa, struct Data data, int oleadaActual);
 int moverZombie(Zombie *zombie, struct Mapa *mapa);
 void agregarZombie(Zombie** lista, int* cantidad, int* capacidad, Zombie nuevo);
 void eliminarZombiesMuertos(Zombie* lista, int* cantidad);
