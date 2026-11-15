@@ -18,9 +18,10 @@ typedef struct
 #define DT 0.0333f
 #define DAÑO_GUISANTE 20
 #define DAÑO_ZOMBIE_CASA 10        //daño que hace un zombie a la casa por cada "mordida"
-#define DAÑO_ZOMBIES_PLANTAS 5      
+#define DAÑO_ZOMBIES_PLANTAS 100      
 #define INTERVALO_PROYECTIL 0.25f   //segundos que tarda un guisante en avanzar una casilla
 #define PLANTA_LANZAGUISANTES '2'
+#define DAÑO_PETACEREZA 300
 
 //Resultados de moverZombie
 enum { MOV_BLOQUEADO = 0, MOV_AVANZO = 1, MOV_CASA = 2, MOV_PLANTA = 3 };
@@ -57,6 +58,13 @@ typedef struct
     int vida; 
 } Nuez ;
 
+typedef struct
+{
+    int fila;
+    int columna;
+    float tiempoExplosion; 
+} PetaCereza ;
+
 //Las plantas se guardan en 'matriz' como un dígito '1'..'9'
 static inline int esPlanta(char c){return c >= '1' && c <= '9';}
 
@@ -76,6 +84,7 @@ int dañarPlantas(int fila, int columna);
 void eliminarPlantasMuertas(struct Mapa *mapa);
 int generarSoles(void);
 void disparoPlantas(struct Mapa *mapa, Zombie* lista, int cantidad);
+void explosivosDañar(struct Mapa *mapa, Zombie* lista, int cantidad);
 
 //LogicaProyectil.c
 void moverProyectiles(struct Mapa *mapa, Zombie* lista, int cantidad);

@@ -7,6 +7,8 @@ static Girasol girasoles[100];
 static int cantidadGirasoles = 0;
 static Nuez nueces[100];
 static int cantidadNueces = 0;
+static PetaCereza cerezas[100];
+static int cantidadCerezas = 0;
 
 //Coloca una planta en el jardín si la casilla es suelo libre ('.') y no hay un zombie encima
 int plantar(struct Mapa *mapa, int fila, int columna, char planta, int* soles)
@@ -33,6 +35,13 @@ int plantar(struct Mapa *mapa, int fila, int columna, char planta, int* soles)
         Nuez nueva = {fila, columna, 400}; 
         nueces[cantidadNueces] = nueva;
         cantidadNueces++;
+        *soles = *soles - 150;
+    }
+    else if (planta == '4' && cantidadCerezas < 100 && *soles >= 150)
+    {
+        PetaCereza nueva = {fila, columna, 2.0f}; 
+        cerezas[cantidadCerezas] = nueva;
+        cantidadCerezas++;
         *soles = *soles - 150;
     }
     else{return 0;} 
@@ -76,6 +85,54 @@ void eliminarPlantasMuertas(struct Mapa *mapa)
         else{i++;}
     }
 }
+
+
+void explosivosDañar(struct Mapa *mapa, Zombie* lista, int cantidad)
+{
+    for (int i = 0; i < cantidadCerezas;)
+    {
+        if (cerezas[i].tiempoExplosion <= 0)
+        {
+            // Guardamos las coordenadas antes de eliminar la cereza
+            int fila = cerezas[i].fila;
+            int columna = cerezas[i].columna;
+
+            // Liberamos su casilla
+            mapa->matriz[fila][columna] = '.';
+
+            // Eliminamos la cereza del arreglo
+            cerezas[i] = cerezas[cantidadCerezas - 1];
+            cantidadCerezas--;
+
+            // Dañamos a los zombies en el área 3x3
+            for (int f = fila - 1; f <= fila + 1; f++)
+            {
+                for (int c = columna - 1; c <= columna + 1; c++)
+                {
+                    // Comprobamos los límites del mapa
+                    if (f < 0 || f >= mapa->filas ||
+                        c < 0 || c >= mapa->columnas)
+                    {
+                        continue;
+                    }
+
+                    if (mapa->matrizLogica[f][c] != 'Z')
+                    {
+                        continue;
+                    }
+
+                    dañarZombie(lista, cantidad, f, c, DAÑO_PETACEREZA);
+                }
+            }
+        }
+        else
+        {
+            cerezas[i].tiempoExplosion -= DT;
+            i++;
+        }
+    }
+}
+
 
 
 //Hay algún zombie en la misma fila, a la derecha de la columna dada

@@ -75,13 +75,13 @@ int moverZombie(Zombie *zombie, struct Mapa *mapa)
 }
 
 //Resta 'daño al zombie que esté en (fila, columna), si hay alguno
-void dañarZombie(Zombie* lista, int cantidad, int fila, int columna, int danio)
+void dañarZombie(Zombie* lista, int cantidad, int fila, int columna, int daño)
 {
     for (int i = 0; i < cantidad; i++)
     {
         if (lista[i].fila == fila && lista[i].columna == columna && lista[i].vida > 0)
         {
-            lista[i].vida -= danio;
+            lista[i].vida -= daño;
             return;
         }
     }

@@ -3,7 +3,7 @@
 //Vuelve a dibujar matrizLogica: borra los zombies de la posición anterior (los proyectiles '-' se
 //conservan) y coloca los zombies de la lista en su posición actual ('Z').
 
-int soles = 100;//Como variable global para que pueda ser utilizada por las demás funciones
+int soles = 1000;//Como variable global para que pueda ser utilizada por las demás funciones
 
 
 static void actualizarMatrizLogica(struct Mapa *jardin, Zombie *lista, int cantidad)
@@ -26,7 +26,7 @@ static void leerTeclado(Movimiento_Usuario *movimiento, struct Mapa *jardin)
     else if (tecla == KEY_DOWN && movimiento->fila < jardin->filas - 1){movimiento->fila++;}
     else if (tecla == KEY_LEFT && movimiento->columna > 1){movimiento->columna--;} //la columna 0 es la casa
     else if (tecla == KEY_RIGHT && movimiento->columna < jardin->columnas - 1){movimiento->columna++;}
-    else if (tecla == '1' || tecla == '2' || tecla == '3'){movimiento->planta = (char)tecla;}
+    else if (tecla == '1' || tecla == '2' || tecla == '3' || tecla == '4' || tecla == '5'){movimiento->planta = (char)tecla;}
     else if (tecla == ' ' || tecla == '\n'){plantar(jardin, movimiento->fila, movimiento->columna, movimiento->planta, &soles);}
 }
 
@@ -83,6 +83,7 @@ void logica(void)
         eliminarZombiesMuertos(listaZombies, &cantidadZombies);
         eliminarPlantasMuertas(jardin);
         actualizarMatrizLogica(jardin, listaZombies, cantidadZombies);
+        explosivosDañar(jardin, listaZombies,cantidadZombies);
 
         tiempoSpawn += DT;
         tiempoSol += DT;
