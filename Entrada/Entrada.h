@@ -27,9 +27,10 @@ struct Mapa{
    char **matrizLogica; //mapa de los zombies ('Z') y proyectiles ('-')
 };
 
-struct Data leerConfiguracion(void);
+struct Data leerConfiguracion(int dificultad);
 struct Mapa* crearMapa(int filas, int columnas,int cantidadObstaculos);
 void agregarObstaculos(struct Mapa *mapa, int cantidadObstaculos);
 void guardarMapaEnArchivo(struct Mapa *mapa);
 struct Mapa* cargarMapa(void);
 void liberarMapa(struct Mapa *mapa);
+

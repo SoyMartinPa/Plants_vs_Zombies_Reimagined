@@ -23,9 +23,23 @@ static void crearConfiguracion(struct Data *data) //Con un puntero evitamos tene
 //Esta función abre el archivo Config.ini para crear un struct Data con la información del archivo
 //Por cada atributo que no se encuentre en el archivo pero sí sea requerido en data se ocupara una
 //configuración por defecto (definida en la primera linea)
-struct Data leerConfiguracion(void)
-{
-    struct Data data = {5,1.0f,1.0f,1.0f,1.0f,10.0f,5.0f,1.0f}; //configuración por defecto
+struct Data leerConfiguracion(int dificultad){
+
+    struct Data data;
+
+    if (dificultad == 1) {
+        data = (struct Data){10,1.0f,1.0f,1.0f,1.0f,10.0f,5.0f,1.0f};
+    }
+    else if (dificultad == 2) {
+        data = (struct Data){10,1.25f,0.75f,0.75f,0.9f,8.0f,4.5f,0.9f};
+    }
+    else if (dificultad == 3) {
+        data = (struct Data){10,1.5f,0.5f,0.5f,0.8f,7.0f,4.0f,0.8f};
+    }
+    else {
+        data = (struct Data){10,1.0f,1.0f,1.0f,1.0f,10.0f,5.0f,1.0f};
+    }
+
 
     char linea[128];
     char atributo[128];

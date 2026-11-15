@@ -242,7 +242,5 @@ int pala(struct Mapa *mapa, int fila, int columna, int* soles)
         mapa->matriz[fila][columna] = '.';
         *soles -= 200;
     }
-
     return 0;
-
 }

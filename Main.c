@@ -16,13 +16,31 @@ void activarANSI() {
 
 int main(void)
 {
+    srand(time(NULL)); //Semilla de inicialización
+    struct Configuraciones config = menu();
+
+    if (config.accion == SALIR)
+        return 0;
+
+    if (config.accion == NUEVO){
+        struct Mapa* jardin = crearMapa(config.tamanoMapa * 4, config.tamanoMapa * 5 + 5, config.dificultad * 5); //Jardin es una matriz Jardin[][]
+        
+        if (remove("Archivos/Config.ini") == 0) {printf("El archivo fue eliminado exitosamente.\n");}
+        else {printf("No se pudo eliminar el archivo. Verifica si existe o si está abierto.\n");}
+
+        struct Data data = leerConfiguracion(config.dificultad); 
+        logica(data, jardin, config.solesIniciales);
+    }
+    else if (config.accion == REINICIAR){
+        struct Mapa* jardin = cargarMapa(); //Jardin es una matriz Jardin[][]
+        struct Data data = leerConfiguracion(config.dificultad); 
+        logica(data, jardin,config.solesIniciales);
+    }
+    else {return 0;}
+
     #ifdef _WIN32
     activarANSI();
     #endif
-
-    srand(time(NULL)); //Semilla de inicialización
-    logica();
-    
     return 0;
 }
 

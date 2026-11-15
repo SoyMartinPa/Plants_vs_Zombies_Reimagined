@@ -11,20 +11,41 @@ typedef struct
 {
     int fila;
     int columna;
-    char planta; //'1', '2', '3', '4'
+    char planta; //'0', '1', '2', '3', '4' o '5'
 } Movimiento_Usuario;
 
 //Tiempo que dura un "frame" (30 por segundo). Todos los temporizadores avanzan en DT por vuelta.
 #define DT 0.0333f
 #define DAÑO_GUISANTE 20
 #define DAÑO_ZOMBIE_CASA 10        //daño que hace un zombie a la casa por cada "mordida"
-#define DAÑO_ZOMBIES_PLANTAS 100      
+#define DAÑO_ZOMBIES_PLANTAS 150      
 #define INTERVALO_PROYECTIL 0.25f   //segundos que tarda un guisante en avanzar una casilla
 #define PLANTA_LANZAGUISANTES '2'
 #define DAÑO_PETACEREZA 300
 
+
+#define NUEVO 1
+#define REINICIAR 2
+#define CARGAR 3
+#define SALIR 4
+
+#define PEQUENO 1
+#define MEDIANO 2
+#define GRANDE 3
+
+#define FACIL 1
+#define NORMAL 2
+#define DIFICIL 3
+
 //Resultados de moverZombie
 enum { MOV_BLOQUEADO = 0, MOV_AVANZO = 1, MOV_CASA = 2, MOV_PLANTA = 3, MOV_AJO = 4};
+
+struct Configuraciones {
+    int accion;       // NUEVO, CONTINUAR o SALIR
+    int tamanoMapa;   // PEQUENO, MEDIANO o GRANDE
+    int dificultad;  // FACIL, NORMAL o DIFICIL
+    int solesIniciales;
+};
 
 typedef struct
 {
@@ -76,7 +97,7 @@ typedef struct
 static inline int esPlanta(char c){return c >= '1' && c <= '5';}
 
 //Logica.c
-void logica(void);
+void logica(struct Data data, struct Mapa* jardin, int solesIniciales);
 
 //LogicaZombies.c
 Zombie* spawnZombieAleatoreo(struct Mapa *mapa, struct Data data);
@@ -96,3 +117,6 @@ void explosivosDañar(struct Mapa *mapa, Zombie* lista, int cantidad);
 
 //LogicaProyectil.c
 void moverProyectiles(struct Mapa *mapa, Zombie* lista, int cantidad);
+
+//configuraciones
+struct Configuraciones menu(void);

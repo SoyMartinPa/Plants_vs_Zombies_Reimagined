@@ -3,7 +3,7 @@
 //Vuelve a dibujar matrizLogica: borra los zombies de la posición anterior (los proyectiles '-' se
 //conservan) y coloca los zombies de la lista en su posición actual ('Z').
 
-int soles = 1000;//Como variable global para que pueda ser utilizada por las demás funciones
+int soles;//Como variable global para que pueda ser utilizada por las demás funciones
 
 
 static void actualizarMatrizLogica(struct Mapa *jardin, Zombie *lista, int cantidad)
@@ -49,11 +49,9 @@ static void imprimirJardin(struct Mapa *jardin, int vidaCasa, int soles, Movimie
     refresh(); //muestra todo junto
 }
 
-void logica(void)
+void logica(struct Data data, struct Mapa* jardin, int solesIniciales)
 {
-    struct Data data = leerConfiguracion(); //Ver info de DATA en Entrada.h
-    struct Mapa* jardin = cargarMapa(); //Jardin es una matriz Jardin[][]
-
+    soles = solesIniciales;
     Zombie* listaZombies = NULL;
     int cantidadZombies = 0;
     int capacidadZombies = 0;
@@ -67,15 +65,12 @@ void logica(void)
     keypad(stdscr, TRUE);  
     nodelay(stdscr, TRUE);  
               
-
-
     //Temporizadores: acumulan segundos y se reinician cuando llegan a su intervalo
     float tiempoSpawn = 0.0f;
     float tiempoSol = 0.0f;
     float tiempoDisparo = 0.0f;
     float tiempoProyectil = 0.0f;
     float tiempoImprimir = 0.0f;
-
 
     while (vidaCasa > 0)
     {
@@ -105,9 +100,7 @@ void logica(void)
             tiempoSpawn = 0.0f;
         }
         
-
         soles += generarSoles();
-
 
         //Aparece un sol
         if (tiempoSol >= data.frecuenciaSoles)
@@ -152,9 +145,9 @@ void logica(void)
         }
     }
 
-
     endwin();
     printf("\nLos zombies se comieron tu casa. Fin del juego.\n");
     free(listaZombies);
     liberarMapa(jardin);
 }
+
