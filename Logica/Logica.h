@@ -11,7 +11,7 @@ typedef struct
 {
     int fila;
     int columna;
-    char planta; //'1', '2' o '3'
+    char planta; //'1', '2', '3', '4'
 } Movimiento_Usuario;
 
 //Tiempo que dura un "frame" (30 por segundo). Todos los temporizadores avanzan en DT por vuelta.
@@ -80,7 +80,8 @@ void dañarZombie(Zombie* lista, int cantidad, int fila, int columna, int danio)
 
 //LogicaPlantas.c
 int plantar(struct Mapa *mapa, int fila, int columna, char planta, int* soles);
-int dañarPlantas(int fila, int columna);
+int pala(struct Mapa *mapa, int fila, int columna, int* soles);
+int dañarPlantas(int fila, int columna, int daño);
 void eliminarPlantasMuertas(struct Mapa *mapa);
 int generarSoles(void);
 void disparoPlantas(struct Mapa *mapa, Zombie* lista, int cantidad);

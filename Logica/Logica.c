@@ -26,8 +26,9 @@ static void leerTeclado(Movimiento_Usuario *movimiento, struct Mapa *jardin)
     else if (tecla == KEY_DOWN && movimiento->fila < jardin->filas - 1){movimiento->fila++;}
     else if (tecla == KEY_LEFT && movimiento->columna > 1){movimiento->columna--;} //la columna 0 es la casa
     else if (tecla == KEY_RIGHT && movimiento->columna < jardin->columnas - 1){movimiento->columna++;}
-    else if (tecla == '1' || tecla == '2' || tecla == '3' || tecla == '4' || tecla == '5'){movimiento->planta = (char)tecla;}
-    else if (tecla == ' ' || tecla == '\n'){plantar(jardin, movimiento->fila, movimiento->columna, movimiento->planta, &soles);}
+    else if (tecla >= '0' && tecla <= '5'){movimiento->planta = (char)tecla;}
+    else if ( (tecla == ' ' || tecla == '\n') && movimiento->planta != '0'){plantar(jardin, movimiento->fila, movimiento->columna, movimiento->planta, &soles);}
+    else if ( (tecla == ' ' || tecla == '\n') && movimiento->planta == '0'){pala(jardin,movimiento->fila,movimiento->columna, &soles);}
 }
 
 //TEMPORAL: dibuja el jardín en consola mientras no exista GUI.c (el cursor se ve con colores invertidos)
@@ -126,7 +127,7 @@ void logica(void)
 
             int resultado = moverZombie(&listaZombies[i], jardin);
             if (resultado == MOV_CASA){vidaCasa -= DAÑO_ZOMBIE_CASA;}
-            if (resultado == MOV_PLANTA){dañarPlantas(listaZombies[i].fila, listaZombies[i].columna - 1);}
+            if (resultado == MOV_PLANTA){dañarPlantas(listaZombies[i].fila, listaZombies[i].columna - 1, DAÑO_ZOMBIES_PLANTAS);}
         }
 
         //Las plantas disparan

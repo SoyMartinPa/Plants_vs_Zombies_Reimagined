@@ -181,7 +181,7 @@ int generarSoles(void)
     return soles;
 }
 
-int dañarPlantas(int fila, int columna)
+int dañarPlantas(int fila, int columna, int daño)
 {
     int plantasTotales = cantidadGirasoles + cantidadLanzaguisantes + cantidadNueces;
     if (plantasTotales >= 100){plantasTotales = 100;}
@@ -190,19 +190,35 @@ int dañarPlantas(int fila, int columna)
     {
         if (girasoles[i].fila == fila && girasoles[i].columna == columna && girasoles[i].vida > 0)
         {
-            girasoles[i].vida -= DAÑO_ZOMBIES_PLANTAS;
+            girasoles[i].vida -= daño;
             return 1;
         }
         if (lanzaguisantes[i].fila == fila && lanzaguisantes[i].columna == columna && lanzaguisantes[i].vida > 0)
         {
-            lanzaguisantes[i].vida -= DAÑO_ZOMBIES_PLANTAS;
+            lanzaguisantes[i].vida -= daño;
             return 1;
         }
         if (nueces[i].fila == fila && nueces[i].columna == columna && nueces[i].vida > 0)
         {
-            nueces[i].vida -= DAÑO_ZOMBIES_PLANTAS;
+            nueces[i].vida -= daño;
             return 1;
         }
     }
     return 0;
+}
+
+int pala(struct Mapa *mapa, int fila, int columna, int* soles)
+{
+    if (fila < 0 || fila >= mapa->filas || columna < 0 || columna >= mapa->columnas){return 1;}
+
+    if (mapa->matriz[fila][columna] >= '1'  && mapa->matriz[fila][columna] <= '5'){
+        dañarPlantas(fila, columna,99999999);
+    }
+    else if(mapa->matriz[fila][columna] == 'O' && *soles >= 200){
+        mapa->matriz[fila][columna] = '.';
+        *soles -= 200;
+    }
+
+    return 0;
+
 }
