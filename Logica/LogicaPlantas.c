@@ -12,53 +12,68 @@ static int cantidadCerezas = 0;
 static Ajo ajos[100];
 static int cantidadAjos = 0;
 
-//Coloca una planta en el jardín si la casilla es suelo libre ('.') y no hay un zombie encima
+// Coloca una planta en el jardin si la casilla es suelo libre '.' y no hay un zombi encima
 int plantar(struct Mapa *mapa, int fila, int columna, char planta, int* soles)
 {
+    // Valida que las coordenadas estén dentro de los limites del mapa
     if (fila < 0 || fila >= mapa->filas || columna < 0 || columna >= mapa->columnas){return 0;}
-    if (mapa->matriz[fila][columna] != '.' || mapa->matrizLogica[fila][columna] == 'Z'){return 0;}
+    
+    //Valida que la casilla sea un espacio libre '.' y que no haya un zombi 'Z' o 'F' ocupandola en matrizLogica
+    if (mapa->matriz[fila][columna] != '.' ||mapa->matrizLogica[fila][columna] == 'Z' || mapa->matrizLogica[fila][columna] == 'F'){return 0;}
 
-    if (planta == '2' && cantidadLanzaguisantes < 100 && *soles >= 100)
+    //Evalua que tipo de planta se desea colocar ('2': Lanzaguisantes, '1': Girasol, '3': Nuez, '4': PetaCereza, '5': Ajo)
+    
+    //Si se cumple la condicion de que hay espacio en el arreglo y hay suficientes soles se crea la planta y se descuenta el costo de los soles
+    if (planta == '2' && cantidadLanzaguisantes < 100 && *soles >= 50)
     {
-        LanzaGuisantes nueva = {fila, columna, 250 , 0.0f}; 
+        LanzaGuisantes nueva = {fila, columna, 100 , 0.0f}; 
         lanzaguisantes[cantidadLanzaguisantes] = nueva;
         cantidadLanzaguisantes++;
-        *soles = *soles - 100;
+        *soles = *soles - 50; // Descuenta el costo de los soles
     }
-    else if (planta == '1' && cantidadGirasoles < 100 && *soles >= 50)
+    //Si se cumple la condicion de que hay espacio en el arreglo y hay suficientes soles se crea la planta y se descuenta el costo de los soles
+    else if (planta == '1' && cantidadGirasoles < 100 && *soles >= 75)
     {
         Girasol nueva = {fila, columna, 150, 0.0f}; 
         girasoles[cantidadGirasoles] = nueva;
         cantidadGirasoles++;
-        *soles = *soles - 50;
+        *soles = *soles - 75; // Descuenta el costo de los soles
     }
+    //Si se cumple la condicion de que hay espacio en el arreglo y hay suficientes soles se crea la planta y se descuenta el costo de los soles
     else if (planta == '3' && cantidadNueces < 100 && *soles >= 50)
     {
         Nuez nueva = {fila, columna, 1000}; 
         nueces[cantidadNueces] = nueva;
         cantidadNueces++;
-        *soles = *soles - 150;
+        *soles = *soles - 50; // Descuenta el costo de los soles
     }
+    //Si se cumple la condicion de que hay espacio en el arreglo y hay suficientes soles se crea la planta y se descuenta el costo de los soles
     else if (planta == '4' && cantidadCerezas < 100 && *soles >= 150)
     {
         PetaCereza nueva = {fila, columna, 2.0f}; 
         cerezas[cantidadCerezas] = nueva;
         cantidadCerezas++;
-        *soles = *soles - 150;
+        *soles = *soles - 150; // Descuenta el costo de los soles
     }
+    //Si se cumple la condicion de que hay espacio en el arreglo y hay suficientes soles se crea la planta y se descuenta el costo de los soles
     else if (planta == '5' && cantidadAjos < 100 && *soles >= 50)
     {
         Ajo nueva = {fila, columna, 200}; 
         ajos[cantidadAjos] = nueva;
         cantidadAjos++;
-        *soles = *soles - 50;
+        *soles = *soles - 50; // Descuenta el costo de los soles
     }
-    else{return 0;} 
+    else { 
+        return 0; // Si no cumple ninguna condicion o faltan soles y/o espacio en el arreglo falla 
+    } 
 
+    //Actualiza la matriz del mapa con el carácter de la planta colocada y retorna éxito que corresponde a 1
     mapa->matriz[fila][columna] = planta;
     return 1;
 }
 
+// Recorre los arreglos de todas las plantas, elimina del mapa las que tienen 
+// vida <= 0 y compacta los arreglos moviendo el ultimo elemento al hueco libre
 void eliminarPlantasMuertas(struct Mapa *mapa)
 {
     for (int i = 0; i < cantidadLanzaguisantes;)
@@ -105,7 +120,7 @@ void eliminarPlantasMuertas(struct Mapa *mapa)
     }
 }
 
-
+//Funcion de la petacereza que recorre el arreglo de cerezas y si alguna tiene tiempoExplosion <= 0 explota y daña a los zombies en un area de 3x3
 void explosivosDañar(struct Mapa *mapa, Zombie* lista, int cantidad)
 {
     for (int i = 0; i < cantidadCerezas;)
@@ -135,7 +150,7 @@ void explosivosDañar(struct Mapa *mapa, Zombie* lista, int cantidad)
                         continue;
                     }
 
-                    if (mapa->matrizLogica[f][c] != 'Z')
+                    if (mapa->matrizLogica[f][c] != 'Z' && mapa->matrizLogica[f][c] != 'F')
                     {
                         continue;
                     }
@@ -154,19 +169,19 @@ void explosivosDañar(struct Mapa *mapa, Zombie* lista, int cantidad)
 
 
 
-//Hay algún zombie en la misma fila, a la derecha de la columna dada
+//Hay algún zombie en la misma fila, a la derecha de la columna dada si hay un zombie devuelve 1, si no hay devuelve 0
 static int hayZombieAdelante(struct Mapa *mapa, int fila, int columna)
 {
     for (int j = columna + 1; j < mapa->columnas; j++)
     {
-        if (mapa->matrizLogica[fila][j] == 'Z'){return 1;}
+        if (mapa->matrizLogica[fila][j] == 'Z' || mapa->matrizLogica[fila][j] == 'F'){return 1;}
     }
     return 0;
 }
 
 //Cada lanzaguisantes dispara (solo si hay un zombie en su fila): crea un proyectil '-'
 //en la casilla de adelante, o daña directamente al zombie si ya está pegado a la planta.
-//Los proyectiles viven en matrizLogica, por eso pasan "por encima" de otras plantas
+//Los proyectiles viven en matrizLogica por eso pasan por encima de otras plantas
 void disparoPlantas(struct Mapa *mapa, Zombie* lista, int cantidad)
 {
     for (int i = 0; i < mapa->filas; i++)
@@ -177,13 +192,14 @@ void disparoPlantas(struct Mapa *mapa, Zombie* lista, int cantidad)
             if (!hayZombieAdelante(mapa, i, j)){continue;}
 
             char siguiente = mapa->matrizLogica[i][j + 1];
-            if (siguiente == 'Z'){dañarZombie(lista, cantidad, i, j + 1, DAÑO_GUISANTE);}
+            if (siguiente == 'Z' || siguiente == 'F'){dañarZombie(lista, cantidad, i, j + 1, DAÑO_GUISANTE);}
             else if (siguiente == '.'){mapa->matrizLogica[i][j + 1] = '-';}
         }
     }
 }
 
 //Genera los soles de los girasoles
+// Cada girasol genera 25 soles cada 10 segundos se acumula el tiempo de cada girasol y cuando llega a 10 segundos se reinicia y se suman 25 soles al total
 int generarSoles(void)
 {
     int soles = 0;
@@ -200,6 +216,7 @@ int generarSoles(void)
     return soles;
 }
 
+// Daña a las plantas en la casilla (fila, columna) si hay alguna y devuelve 1 si dañó alguna planta, 0 si no había ninguna planta
 int dañarPlantas(int fila, int columna, int daño)
 {
     int plantasTotales = cantidadGirasoles + cantidadLanzaguisantes + cantidadNueces + cantidadAjos;
@@ -231,6 +248,9 @@ int dañarPlantas(int fila, int columna, int daño)
     return 0;
 }
 
+
+// Quita un obstáculo 'O'  o planta de la casilla fila y columna si hay alguno, para el obstaculo solo si hay
+// suficientes soles 
 int pala(struct Mapa *mapa, int fila, int columna, int* soles)
 {
     if (fila < 0 || fila >= mapa->filas || columna < 0 || columna >= mapa->columnas){return 1;}
@@ -244,3 +264,4 @@ int pala(struct Mapa *mapa, int fila, int columna, int* soles)
     }
     return 0;
 }
+
