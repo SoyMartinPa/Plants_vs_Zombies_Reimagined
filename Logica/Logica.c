@@ -170,7 +170,7 @@ void logica(struct Data data, struct Mapa* jardin, int solesIniciales, Zombie **
     int capacidadZombies = (capacidadZombiesRef != NULL) ? *capacidadZombiesRef : 0;
 
     int oleadaActual = (oleadaActualRef != NULL) ? *oleadaActualRef : 1;
-    int zombiesPorOleada = 2 + (oleadaActual - 1) * 5;
+    int zombiesPorOleada = 8 + (oleadaActual - 1) * 5;
     int zombiesGenerados = 0;
 
     int pausaEntreOleadas = 1;

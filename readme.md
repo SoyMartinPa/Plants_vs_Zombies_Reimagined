@@ -2,7 +2,7 @@
 
 Proyecto desarrollado para el curso **Programación de Computadores**.
 
-## Avance y mecánicas actuales
+## Selección de utilidades
 
 Usando los números y la barra espaciadora se pueden utilizar las siguientes plantas y herramientas:
 
@@ -15,13 +15,14 @@ Usando los números y la barra espaciadora se pueden utilizar las siguientes pla
 
 El mapa también incorpora obstáculos (`'O'`), los cuales impiden colocar plantas en las casillas que ocupan. Se eliminan utilizando la pala.
 
-## Funcionalidades pendientes (TODO)
+## Funcionamiento de las oleadas
+Al iniciar una partida, se otorgará al usuario 20 segundos para preparar su defensa contra los zombies.
+Cada oleada es más larga y dificil que la anterior, aumentando la posibilidad de otorgarle armadura más poderosa
+a los zombies y más vida, como también aumentar su cantidad de aparición por ronda.
+Una vez terminada una ronda, se otorgarán 10 segundos de preparación para la siguiente ronda, que será empezada
+por un zombie bandera 'F' que será más rápido que un zombie normal. Adicionalmente, obstaculos serán agregados
+al inicio de cada ronda.
 
-A continuación, se presentan las principales funcionalidades que quedan por implementar para completar el proyecto. Esta lista puede ampliarse a medida que avance el desarrollo.
-
-1. **Interfaz gráfica:** incorporar una interfaz que incluya un menú de inicio con opciones de configuración, selección de modos de juego y otras funcionalidades. Además, se deberán mejorar las representaciones visuales de las plantas, zombies y demás elementos del juego.
-4. **Sistema de oleadas:** implementar diferentes oleadas de enemigos e incorporar zombies especiales asociados a ellas.
-5. **Balance del juego:** ajustar las mecánicas, características y estadísticas de las plantas y zombies para lograr una experiencia de juego equilibrada.
 
 ## Compilación y ejecución
 

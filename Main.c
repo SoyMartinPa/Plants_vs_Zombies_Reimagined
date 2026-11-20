@@ -34,6 +34,7 @@ int main(void)
             leerConfiguracion(config.dificultad);
             jardin = crearMapa(config.tamanoMapa * 4, config.tamanoMapa * 5 + 5, config.dificultad * 5);
             remove("Archivos/Config.ini");
+            leerConfiguracion(config.dificultad);
             logica(data, jardin, soles, &listaZombies, &cantidadZombies, &capacidadZombies, &vidaCasa, &oleadaActual, &salirAlMenu);
         }
         else if (config.accion == REINICIAR) {
