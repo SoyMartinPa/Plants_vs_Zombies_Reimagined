@@ -23,6 +23,10 @@ Una vez terminada una ronda, se otorgarán 10 segundos de preparación para la s
 por un zombie bandera 'F' que será más rápido que un zombie normal. Adicionalmente, obstaculos serán agregados
 al inicio de cada ronda.
 
+## Modos de juego
+- `'Reiniciar'`: Se ocupa el mapa y configuración ya existente para iniciar una nueva partida.
+- `'Nuevo Juego'`: Se crea un nuevo mapa y configuración acorde a los parametros dado por el usuario.
+- `'Cargar Partida'`: Se vuelve al estado guardado por el usuario
 
 ## Compilación y ejecución
 
