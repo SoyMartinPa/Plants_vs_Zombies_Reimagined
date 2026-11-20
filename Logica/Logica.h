@@ -142,5 +142,5 @@ void guardarPartidaCompleta(const char *ruta, struct Mapa *mapa, Zombie *listaZo
 struct Mapa* cargarPartidaCompleta(const char *ruta, Zombie **listaZombies, int *cantidadZombies, int *capacidadZombies, int *soles, int *vidaCasa, int *oleadaActual);
 
 
-
+// Función para mostrar un menu de selección y devolver la opción elegida
 int seleccionar(const char *titulo, const char *opciones[], int n);

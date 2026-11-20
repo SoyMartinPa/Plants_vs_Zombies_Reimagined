@@ -30,46 +30,62 @@ static void actualizarMatrizLogica(struct Mapa *jardin, Zombie *lista, int canti
 
 // Lee las entradas del teclado en tiempo real para mover el cursor seleccionar, plantas,
 // plantar, usar la pala o abrir el menú de pausa mediante la tecla ESC.
-static void leerTeclado(Movimiento_Usuario *movimiento, struct Mapa *jardin, Zombie **listaZombies, int *cantidadZombies, int *capacidadZombies, int *vidaCasa, int *oleadaActual, int *salirAlMenu)
+// Lee la entrada del teclado en tiempo real: gestiona la pausa con ESC y,
+// cuando el juego está activo, mueve el cursor, selecciona plantas/herramientas o planta/usa la pala.
+static void leerTeclado(Movimiento_Usuario *movimiento, struct Mapa *jardin, Zombie **listaZombies, int *cantidadZombies,  int *vidaCasa, int *oleadaActual, int *salirAlMenu, int *pausado)
 {
-    (void)capacidadZombies; // Evita advertencias del compilador por parámetro no utilizado
-    int tecla = getch(); // Captura la tecla presionada
+    
+    int tecla = getch();// Captura la tecla presionada sin bloquear el bucle principal
 
-    // Movimiento del cursor con las teclas de flechas (delimitado a los bordes del jardín)
-    if (tecla == KEY_UP && movimiento->fila > 0){movimiento->fila--;}
-    else if (tecla == KEY_DOWN && movimiento->fila < jardin->filas - 1){movimiento->fila++;}
-    else if (tecla == KEY_LEFT && movimiento->columna > 1){movimiento->columna--;} 
-    else if (tecla == KEY_RIGHT && movimiento->columna < jardin->columnas - 1){movimiento->columna++;}
-    
-    // Selección rapida de plantas o herramientas mediante los números del '0' al '5'
-    else if (tecla >= '0' && tecla <= '5'){movimiento->planta = (char)tecla;}
-    
-    // Accion de colocar una planta 
-    else if ((tecla == ' ' || tecla == '\n') && movimiento->planta != '0'){
-        plantar(jardin, movimiento->fila, movimiento->columna, movimiento->planta, &soles);
+    // Tecla 27 = ESC: activa la bandera de pausa y sale para congelar la simulacion
+    if (tecla == 27) {
+        *pausado = 1;
+        return;
     }
-    // Accion de usar la pala ('0') para remover plantas u obstaculos
-    else if ((tecla == ' ' || tecla == '\n') && movimiento->planta == '0'){
-        pala(jardin, movimiento->fila, movimiento->columna, &soles);
-    }
-    // Menu de pausa al presionar la tecla ESC 
-    else if (tecla == 27) { 
+
+    // Si esta pausado, muestra el menu bloqueante y procesa la opción elegida
+    if (*pausado) {
         const char *opcionesPausa[] = {
             "Seguir jugando",
             "Guardar partida",
             "Salir al menu principal"
         };
-        
-        int seleccionPausa = seleccionar("JUEGO PAUSADO", opcionesPausa, 3);
 
-        // Guardar el estado completo de la partida en archivo
+        nodelay(stdscr, FALSE); // Espera a que el usuario elija una opcion en el menu
+        int seleccionPausa = seleccionar("JUEGO PAUSADO", opcionesPausa, 3);
+        nodelay(stdscr, TRUE);  // Restaura el modo en tiempo real para el bucle del juego
+        keypad(stdscr, TRUE);   // Asegura que las teclas especiales (flechas) sigan activas
+        flushinp();             // Limpia teclas residuales del búfer tras cerrar el menu
+
+        // Guarda el estado actual de la partida en disco
         if (seleccionPausa == 1) {
             guardarPartidaCompleta("Archivos/Guardado.dat", jardin, *listaZombies, *cantidadZombies, soles, *vidaCasa, *oleadaActual);
-        } 
-        // salir al menú principal
-        else if (seleccionPausa == 2) {
-            *salirAlMenu = 1; 
         }
+        // Marca la salida para romper el bucle principal y volver al menu inicial
+        else if (seleccionPausa == 2) {
+            *salirAlMenu = 1;
+        }
+
+        *pausado = 0; // Libera la pausa para reanudar o salir limpiamente
+        return;
+    }
+
+    // Desplazamiento del cursor dentro de los limites válidos del jardín
+    if (tecla == KEY_UP && movimiento->fila > 0){movimiento->fila--;}
+    else if (tecla == KEY_DOWN && movimiento->fila < jardin->filas - 1){movimiento->fila++;}
+    else if (tecla == KEY_LEFT && movimiento->columna > 1){movimiento->columna--;} 
+    else if (tecla == KEY_RIGHT && movimiento->columna < jardin->columnas - 1){movimiento->columna++;}
+    
+    // Selección rapida de planta ('1'-'5') o pala ('0')
+    else if (tecla >= '0' && tecla <= '5'){movimiento->planta = (char)tecla;}
+    
+    // Coloca la planta equipada en la celda actual con Espacio o Enter
+    else if ((tecla == ' ' || tecla == '\n') && movimiento->planta != '0'){
+        plantar(jardin, movimiento->fila, movimiento->columna, movimiento->planta, &soles);
+    }
+    // Usa la pala ('0') para quitar una planta u obstáculo en la celda actual
+    else if ((tecla == ' ' || tecla == '\n') && movimiento->planta == '0'){
+        pala(jardin, movimiento->fila, movimiento->columna, &soles);
     }
 }
 
@@ -189,138 +205,149 @@ void logica(struct Data data, struct Mapa* jardin, int solesIniciales, Zombie **
     float tiempoDisparo = 0.0f;
     float tiempoProyectil = 0.0f;
 
+
+    int pausado = 0; // Bandera para pausar el juego cuando se presiona ESC
+
+
     // Bucle principal del juego en ejecución (se ejecuta mientras la casa tenga vida y no se pida salir)
     while (vidaCasa > 0 && !salirAlMenu)
     {
         usleep(33333); // Retardo para mantener una tasa constante de ~30 fotogramas por segundo
         
         // Lee las pulsaciones de teclado del usuario
-        leerTeclado(&movimiento, jardin, &listaZombies, &cantidadZombies, &capacidadZombies, &vidaCasa, &oleadaActual, &salirAlMenu);
+        leerTeclado(&movimiento, jardin, &listaZombies, &cantidadZombies,&vidaCasa, &oleadaActual, &salirAlMenu, &pausado);
         
         if (salirAlMenu) break;
-
-        // Limpieza de entidades destruidas y actualización de matrices y daño por explosivos
-        eliminarZombiesMuertos(listaZombies, &cantidadZombies);
-        eliminarPlantasMuertas(jardin);
-        actualizarMatrizLogica(jardin, listaZombies, cantidadZombies);
-        explosivosDañar(jardin, listaZombies, cantidadZombies);
-
-        // Acumula el tiempo transcurrido en el frame actual (DT)
-        tiempoSpawn += (DT * (1.0f + (oleadaActual - 1) * 0.05f));
-        tiempoSol += DT;
-        tiempoDisparo += DT;
-        tiempoProyectil += DT;
         
-        int permitirSpawn = 1;
+        if (!pausado)
+        {
+            // Limpieza de entidades destruidas y actualización de matrices y daño por explosivos
+            eliminarZombiesMuertos(listaZombies, &cantidadZombies);
+            eliminarPlantasMuertas(jardin);
+            actualizarMatrizLogica(jardin, listaZombies, cantidadZombies);
+            explosivosDañar(jardin, listaZombies, cantidadZombies);
 
-        if (preparacionInicial) {
-            permitirSpawn = 0; 
-        }
+            // Acumula el tiempo transcurrido en el frame actual (DT)
+            tiempoSpawn += (DT * (1.0f + (oleadaActual - 1) * 0.05f));
+            tiempoSol += DT;
+            tiempoDisparo += DT;
+            tiempoProyectil += DT;
+            
+            int permitirSpawn = 1; // Bandera para controlar si se permite generar un nuevo zombi en este ciclo
 
-        // En la primera oleada, da un respiro inicial de 20 segundos al jugador antes de spawnear zombis
-        if (oleadaActual == 1 && pausaEntreOleadas) {
-            if (tiempoPausa < 20.0f) {
+            if (preparacionInicial) {
                 permitirSpawn = 0; 
             }
-        }
-        
-        // Generacion automatica de zombis según la frecuencia y la oleada actual
-        if (!pausaEntreOleadas && zombiesGenerados < zombiesPorOleada && permitirSpawn)
-        {
-            if (tiempoSpawn >= data.frecuenciaSpawnZombies)
-            {
-                Zombie *nuevo = spawnZombieAleatoreo(jardin, data, oleadaActual);
-                if (nuevo != NULL)
-                {
-                    agregarZombie(&listaZombies, &cantidadZombies, &capacidadZombies, *nuevo);
-                    zombiesGenerados++;
-                    free(nuevo);
+
+            // En la primera oleada, da un respiro inicial de 20 segundos al jugador antes de spawnear zombis
+            if (oleadaActual == 1 && pausaEntreOleadas) {
+                if (tiempoPausa < 20.0f) {
+                    permitirSpawn = 0; 
                 }
-                tiempoSpawn = 0.0f;
             }
-        }
-
-        // Control de fin de oleada: si ya se generaron todos y no quedan zombis vivos avanza o termina
-        if (!pausaEntreOleadas && zombiesGenerados == zombiesPorOleada && cantidadZombies == 0)
-        {
-            if (oleadaActual >= data.numeroOleadas)
+            
+            // Generacion automatica de zombis según la frecuencia y la oleada actual
+            if (!pausaEntreOleadas && zombiesGenerados < zombiesPorOleada && permitirSpawn)
             {
-                break; // Si se completaron todas las oleadas
+                if (tiempoSpawn >= data.frecuenciaSpawnZombies)
+                {
+                    Zombie *nuevo = spawnZombieAleatoreo(jardin, data, oleadaActual);
+                    if (nuevo != NULL)
+                    {
+                        agregarZombie(&listaZombies, &cantidadZombies, &capacidadZombies, *nuevo);
+                        zombiesGenerados++;
+                        free(nuevo);
+                    }
+                    tiempoSpawn = 0.0f;
+                }
             }
-            pausaEntreOleadas = 1;
-            tiempoPausa = 0.0f;
-        }
-        
-        soles += generarSoles(); // Genera soles periodicamente segun la frecuencia definida en la configuración del juego
 
-        // Incremento periodico de soles automaticos
-        if (tiempoSol >= data.frecuenciaSoles)
-        {
-            soles += 25;
-            tiempoSol = 0.0f;
-        }
-
-        // Actualiza el movimiento y las acciones de ataque de cada zombi activo
-        for (int i = 0; i < cantidadZombies; i++)
-        {
-            if (listaZombies[i].vida <= 0){continue;}
-
-            listaZombies[i].movimiento += DT;
-            float velocidad = data.velocidadMovimientoZombies;
-            if (listaZombies[i].tipo == ZOMBIE_FLAG){velocidad *= FACTOR_VELOCIDAD_FLAG;}
-
-            if (listaZombies[i].movimiento < velocidad){continue;}
-            listaZombies[i].movimiento = 0.0f;
-
-            int filaOriginal = listaZombies[i].fila; 
-            int resultado = moverZombie(&listaZombies[i], jardin);
-            if (resultado == MOV_CASA){vidaCasa -= DAÑO_ZOMBIE_CASA;}
-            if (resultado == MOV_PLANTA){dañarPlantas(filaOriginal, listaZombies[i].columna - 1, DAÑO_ZOMBIES_PLANTAS);}
-            if (resultado == MOV_AJO){dañarPlantas(filaOriginal, listaZombies[i].columna - 1, (int)(DAÑO_ZOMBIES_PLANTAS * 0.5));}
-        }
-        // Control de disparo de las plantas 
-        if (tiempoDisparo >= data.frecuenciaDisparoPlantas)
-        {
-            disparoPlantas(jardin, listaZombies, cantidadZombies);
-            tiempoDisparo = 0.0f;
-        }
-
-        // Actualiza el desplazamiento de los proyectiles en el mapa
-        if (tiempoProyectil >= INTERVALO_PROYECTIL)
-        {
-            moverProyectiles(jardin, listaZombies, cantidadZombies);
-            tiempoProyectil = 0.0f;
-        }
-
-        // Redibuja el jardin actualizado en la terminal
-        imprimirJardin(jardin, vidaCasa, soles, movimiento, oleadaActual, data.numeroOleadas, listaZombies, cantidadZombies);
-        
-        // Maneja el tiempo de preparación inicial o el descanso entre oleadas
-        if (preparacionInicial)
-        {
-            tiempoPausa += DT;
-            if (tiempoPausa >= 20.0f)
+            // Control de fin de oleada: si ya se generaron todos y no quedan zombis vivos avanza o termina
+            if (!pausaEntreOleadas && zombiesGenerados == zombiesPorOleada && cantidadZombies == 0)
             {
-                preparacionInicial = 0;     // Termina la preparación inicial y permite que comiencen a salir los zombis
-                pausaEntreOleadas = 0;      
+                if (oleadaActual >= data.numeroOleadas)
+                {
+                    break; // Si se completaron todas las oleadas
+                }
+                pausaEntreOleadas = 1;
                 tiempoPausa = 0.0f;
             }
-        }
-        else if (pausaEntreOleadas)
-        {
-            tiempoPausa += DT;
-            if (tiempoPausa >= 10.0f)
+            
+            soles += generarSoles(); // Genera soles periodicamente segun la frecuencia definida en la configuración del juego
+
+            // Incremento periodico de soles automaticos
+            if (tiempoSol >= data.frecuenciaSoles)
             {
-               
-                oleadaActual++;
-                zombiesPorOleada += 5;
-                zombiesGenerados = 0;
-
-                tiempoSpawn = 0.0f;
-                tiempoPausa = 0.0f;
-
-                pausaEntreOleadas = 0;
+                soles += 25;
+                tiempoSol = 0.0f;
             }
+
+            // Actualiza el movimiento y las acciones de ataque de cada zombi activo
+            // Recorre la lista de zombis y mueve cada uno según su velocidad y tipo, aplicando daño a la casa o plantas si corresponde
+            for (int i = 0; i < cantidadZombies; i++)
+            {
+                if (listaZombies[i].vida <= 0){continue;}
+
+                listaZombies[i].movimiento += DT;
+                float velocidad = data.velocidadMovimientoZombies;
+                if (listaZombies[i].tipo == ZOMBIE_FLAG){velocidad *= FACTOR_VELOCIDAD_FLAG;}
+
+                if (listaZombies[i].movimiento < velocidad){continue;}
+                listaZombies[i].movimiento = 0.0f;
+
+                int filaOriginal = listaZombies[i].fila; 
+                int resultado = moverZombie(&listaZombies[i], jardin);
+                if (resultado == MOV_CASA){vidaCasa -= DAÑO_ZOMBIE_CASA;}
+                if (resultado == MOV_PLANTA){dañarPlantas(filaOriginal, listaZombies[i].columna - 1, DAÑO_ZOMBIES_PLANTAS);}
+                if (resultado == MOV_AJO){dañarPlantas(filaOriginal, listaZombies[i].columna - 1, (int)(DAÑO_ZOMBIES_PLANTAS * 0.5));}
+            }
+            // Control de disparo de las plantas 
+            if (tiempoDisparo >= data.frecuenciaDisparoPlantas)
+            {
+                disparoPlantas(jardin, listaZombies, cantidadZombies);
+                tiempoDisparo = 0.0f;
+            }
+
+            // Actualiza el desplazamiento de los proyectiles en el mapa
+            if (tiempoProyectil >= INTERVALO_PROYECTIL)
+            {
+                moverProyectiles(jardin, listaZombies, cantidadZombies);
+                tiempoProyectil = 0.0f;
+            }
+
+            // Maneja el tiempo de preparación inicial o el descanso entre oleadas
+            if (preparacionInicial)
+            {
+                tiempoPausa += DT;
+                if (tiempoPausa >= 20.0f)
+                {
+                    preparacionInicial = 0;     // Termina la preparación inicial y permite que comiencen a salir los zombis
+                    pausaEntreOleadas = 0;      
+                    tiempoPausa = 0.0f;
+                }
+            }
+            else if (pausaEntreOleadas)
+            {
+                tiempoPausa += DT;
+                if (tiempoPausa >= 10.0f)
+                {
+                   
+                    oleadaActual++;
+                    zombiesPorOleada += 5;
+                    zombiesGenerados = 0;
+
+                    tiempoSpawn = 0.0f;
+                    tiempoPausa = 0.0f;
+
+                    pausaEntreOleadas = 0;
+                }
+            }
+        }
+
+        if (!pausado)
+        {
+            // Redibuja el jardin actualizado en la terminal
+            imprimirJardin(jardin, vidaCasa, soles, movimiento, oleadaActual, data.numeroOleadas, listaZombies, cantidadZombies);
         }
     }
     endwin(); // Restaura el modo normal de la terminal al salir del entorno ncurses
@@ -351,5 +378,3 @@ void logica(struct Data data, struct Mapa* jardin, int solesIniciales, Zombie **
     liberarMapa(jardin);
 
 }
-
-            
