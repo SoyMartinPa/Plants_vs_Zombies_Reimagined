@@ -2,8 +2,8 @@
 
 // Spawnea un zombi aleatorio (normal, con cono, con casco o abanderado) en la ultima columna del jardín
 // Si la ultima columna esta ya ocupada por otros zombis (Z o F) en todas las filas no se crea el zombie
-// Mientras aumentan las oleada aumenta la probabilidad de que el zombi sea abanderado y también de que tenga casco o cono
-Zombie* spawnZombieAleatoreo(struct Mapa *mapa, struct Data data, int oleadaActual)
+// Mientras aumentan las oleada aumenta la probabilidad de que tenga casco o cono
+Zombie* spawnZombieAleatoreo(struct Mapa *mapa, struct Data data, int oleadaActual, int *bandera)
 {
     // Arreglo temporal para almacenar los índices de las filas que están libres en la última columna
     int libres[mapa->filas];
@@ -37,29 +37,14 @@ Zombie* spawnZombieAleatoreo(struct Mapa *mapa, struct Data data, int oleadaActu
     zombie->columna = mapa->columnas - 1;          // Aparece siempre en la ultima columna
     zombie->vida = (int)(100 * data.resistenciaZombies);
     zombie->movimiento = 0.0f; 
-
-    // Calcula la probabilidad de que aparezca un zombi abanderado la cual aumenta con cada oleada
-    int probabilidadBandera = 8 + (oleadaActual - 1);
-    
-    // Limita la probabilidad máxima del abanderado al 20%
-    if (probabilidadBandera > 20) {
-        probabilidadBandera = 20; 
-    }
-
-    // Genera un número aleatorio entre 0 y 99 para determinar si el zombi será abanderado
-    int tirada = rand() % 100;
-    // Determina si el zombi es abanderado comparando la tirada con la probabilidad calculada 
-    int esBandera = (tirada < probabilidadBandera);
-
-    // Si resulta ser abanderado, se configuran sus atributos especiales
-    if (esBandera) {
+    if (*bandera == 1){
         zombie->tipo = ZOMBIE_FLAG;
-        zombie->armadura = 0;       
+        zombie->armadura = 0;
+        *bandera = 0;
     }
-    else {
+    else{
         // Si no es abanderado se asigna un tipo normal y se determina si tendrá casco o cono según probabilidades escaladas por oleada
         zombie->tipo = ZOMBIE_NORMAL;
-    
         int probabilidadArmadura = rand() % 100;
     
         // Calcula las probabilidades de equipar casco o cono escalando exponencialmente por oleada
@@ -86,10 +71,12 @@ Zombie* spawnZombieAleatoreo(struct Mapa *mapa, struct Data data, int oleadaActu
             zombie->armadura = 0; // Sin armadura (normal)
         }
     }
+        // Retorna el puntero con el zombi creado y configurado
+        return zombie;
+    }
 
-    // Retorna el puntero con el zombi creado y configurado
-    return zombie;
-}
+    
+
 
 //Verifica si la casilla fila columna esta disponible para que el zombie se mueva a ella se usa en parte del ajo
 static int casillaDisponible(struct Mapa *mapa, int fila, int columna)

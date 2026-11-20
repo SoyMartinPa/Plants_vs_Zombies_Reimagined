@@ -116,7 +116,7 @@ static inline int esPlanta(char c){return c >= '1' && c <= '5';}
 void logica(struct Data data, struct Mapa* jardin, int solesIniciales, Zombie **listaZombiesRef, int *cantidadZombiesRef, int *capacidadZombiesRef, int *vidaCasaRef, int *oleadaActualRef, int *salirAlMenuRef);
 
 //LogicaZombies.c
-Zombie* spawnZombieAleatoreo(struct Mapa *mapa, struct Data data, int oleadaActual);
+Zombie* spawnZombieAleatoreo(struct Mapa *mapa, struct Data data, int oleadaActual, int *bandera);
 int moverZombie(Zombie *zombie, struct Mapa *mapa);
 void agregarZombie(Zombie** lista, int* cantidad, int* capacidad, Zombie nuevo);
 void eliminarZombiesMuertos(Zombie* lista, int* cantidad);

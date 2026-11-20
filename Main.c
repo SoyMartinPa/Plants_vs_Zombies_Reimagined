@@ -31,6 +31,7 @@ int main(void)
         int salirAlMenu = 0;
         // Dependiendo de la accion elegida en el menu se inicia una nueva partida se reinicia o se carga una partida guardada
         if (config.accion == NUEVO) {
+            leerConfiguracion(config.dificultad);
             jardin = crearMapa(config.tamanoMapa * 4, config.tamanoMapa * 5 + 5, config.dificultad * 5);
             remove("Archivos/Config.ini");
             logica(data, jardin, soles, &listaZombies, &cantidadZombies, &capacidadZombies, &vidaCasa, &oleadaActual, &salirAlMenu);

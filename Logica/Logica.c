@@ -170,7 +170,7 @@ void logica(struct Data data, struct Mapa* jardin, int solesIniciales, Zombie **
     int capacidadZombies = (capacidadZombiesRef != NULL) ? *capacidadZombiesRef : 0;
 
     int oleadaActual = (oleadaActualRef != NULL) ? *oleadaActualRef : 1;
-    int zombiesPorOleada = 10 + (oleadaActual - 1) * 5;
+    int zombiesPorOleada = 2 + (oleadaActual - 1) * 5;
     int zombiesGenerados = 0;
 
     int pausaEntreOleadas = 1;
@@ -207,7 +207,7 @@ void logica(struct Data data, struct Mapa* jardin, int solesIniciales, Zombie **
 
 
     int pausado = 0; // Bandera para pausar el juego cuando se presiona ESC
-
+    int bandera = 0; //indica si el zombie a generar debe poseer bandera (Un zombie bandera al inicio de cada ronda)
 
     // Bucle principal del juego en ejecución (se ejecuta mientras la casa tenga vida y no se pida salir)
     while (vidaCasa > 0 && !salirAlMenu)
@@ -251,7 +251,7 @@ void logica(struct Data data, struct Mapa* jardin, int solesIniciales, Zombie **
             {
                 if (tiempoSpawn >= data.frecuenciaSpawnZombies)
                 {
-                    Zombie *nuevo = spawnZombieAleatoreo(jardin, data, oleadaActual);
+                    Zombie *nuevo = spawnZombieAleatoreo(jardin, data, oleadaActual, &bandera);
                     if (nuevo != NULL)
                     {
                         agregarZombie(&listaZombies, &cantidadZombies, &capacidadZombies, *nuevo);
@@ -340,6 +340,8 @@ void logica(struct Data data, struct Mapa* jardin, int solesIniciales, Zombie **
                     tiempoPausa = 0.0f;
 
                     pausaEntreOleadas = 0;
+                    bandera = 1;
+                    agregarObstaculos(jardin, oleadaActual);
                 }
             }
         }

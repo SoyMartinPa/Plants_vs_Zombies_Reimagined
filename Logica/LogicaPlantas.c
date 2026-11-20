@@ -24,20 +24,20 @@ int plantar(struct Mapa *mapa, int fila, int columna, char planta, int* soles)
     //Evalua que tipo de planta se desea colocar ('2': Lanzaguisantes, '1': Girasol, '3': Nuez, '4': PetaCereza, '5': Ajo)
     
     //Si se cumple la condicion de que hay espacio en el arreglo y hay suficientes soles se crea la planta y se descuenta el costo de los soles
-    if (planta == '2' && cantidadLanzaguisantes < 100 && *soles >= 50)
+    if (planta == '2' && cantidadLanzaguisantes < 100 && *soles >= 100)
     {
         LanzaGuisantes nueva = {fila, columna, 100 , 0.0f}; 
         lanzaguisantes[cantidadLanzaguisantes] = nueva;
         cantidadLanzaguisantes++;
-        *soles = *soles - 50; // Descuenta el costo de los soles
+        *soles = *soles - 100; // Descuenta el costo de los soles
     }
     //Si se cumple la condicion de que hay espacio en el arreglo y hay suficientes soles se crea la planta y se descuenta el costo de los soles
-    else if (planta == '1' && cantidadGirasoles < 100 && *soles >= 75)
+    else if (planta == '1' && cantidadGirasoles < 100 && *soles >= 50)
     {
         Girasol nueva = {fila, columna, 150, 0.0f}; 
         girasoles[cantidadGirasoles] = nueva;
         cantidadGirasoles++;
-        *soles = *soles - 75; // Descuenta el costo de los soles
+        *soles = *soles - 50; // Descuenta el costo de los soles
     }
     //Si se cumple la condicion de que hay espacio en el arreglo y hay suficientes soles se crea la planta y se descuenta el costo de los soles
     else if (planta == '3' && cantidadNueces < 100 && *soles >= 50)
