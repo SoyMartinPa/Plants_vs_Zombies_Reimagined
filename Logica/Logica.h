@@ -130,6 +130,7 @@ void eliminarPlantasMuertas(struct Mapa *mapa);
 int generarSoles(void);
 void disparoPlantas(struct Mapa *mapa, Zombie* lista, int cantidad);
 void explosivosDañar(struct Mapa *mapa, Zombie* lista, int cantidad);
+void reiniciarGirasoles(void);
 
 //LogicaProyectil.c
 void moverProyectiles(struct Mapa *mapa, Zombie* lista, int cantidad);

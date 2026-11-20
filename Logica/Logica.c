@@ -377,6 +377,7 @@ void logica(struct Data data, struct Mapa* jardin, int solesIniciales, Zombie **
 
     
     free(listaZombies);
+    reiniciarGirasoles(); // Reinicia el contador de girasoles para la siguiente partida
     liberarMapa(jardin);
 
 }

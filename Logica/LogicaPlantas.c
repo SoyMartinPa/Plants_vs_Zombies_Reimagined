@@ -265,3 +265,8 @@ int pala(struct Mapa *mapa, int fila, int columna, int* soles)
     return 0;
 }
 
+void reiniciarGirasoles(void)
+{
+    cantidadGirasoles = 0; // Reinicia la cantidad de girasoles a 0 para la siguiente partida
+}
+
